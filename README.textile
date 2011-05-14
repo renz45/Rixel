@@ -1,0 +1,12 @@
+h1. Rixel Flash 2D rendering engine
+
+*Rixel*
+
+h2. Goals
+
+* Optimize rendering as much as possible in order to make games faster on computer and mobile environments
+* Use methods and advice contained within "Flash Platform Optimazation":http://help.adobe.com/en_US/as3/.../flashplatform_optimizing_content.pdf as a basis for initial design
+* integrate Box2D for physics
+* use as3-Signals for events
+* Integrate a modular system for addons to add other functionality (ex. isometric rendering, box2D, parallax scrolling, particle effects, etc)
+* create a matching Red5 server side application that will facilitate multiplayer games and interaction
