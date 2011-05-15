@@ -83,11 +83,7 @@ package org.rixel.Core.main
 		}
 		
 		private function blitRenderer():void
-		{
-			_canvasData.lock();
-			
-			_canvasData.fillRect( _renderRect,0xFFFFFF);
-			
+		{	
 			var rectXOffset:Number;
 			var rectYOffset:Number
 			
@@ -99,12 +95,21 @@ package org.rixel.Core.main
 			var sWidth:Number = 0;
 			var sHeight:Number = 0;
 			
+			var point:Point = new Point();
+			var rect:Rectangle = new Rectangle();
+			
+			_canvasData.lock();
+			
+			_canvasData.fillRect( _renderRect,0xFFFFFF);
+			
 			for each(var s2D:Animation2D in _displayList)
 			{
 				sX = s2D.rixel::renderX;
 				sY = s2D.rixel::renderY;
 				sWidth = s2D.width;
 				sHeight = s2D.height;
+				point.x = sX;
+				point.y = sY;
 				
 				if(sX < 0)
 				{
@@ -134,9 +139,12 @@ package org.rixel.Core.main
 					rectHeightOffset = 0;
 				}
 				
-					_canvasData.copyPixels(s2D.rixel::frame,new Rectangle(rectXOffset,rectYOffset,sWidth + rectXOffset - rectWidthOffset,sHeight + rectYOffset - rectHeightOffset),new Point(sX,sY) );
-			
+				rect.x = rectXOffset;
+				rect.y = rectYOffset;
+				rect.width = sWidth + rectXOffset - rectWidthOffset;
+				rect.height = sHeight + rectYOffset - rectHeightOffset;
 				
+				_canvasData.copyPixels(s2D.rixel::frame,rect, point);
 			}
 			
 			_canvasData.unlock(); 
