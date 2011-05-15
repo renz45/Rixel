@@ -49,8 +49,6 @@ package org.rixel.Core.main
 		
 		private function init():void
 		{	
-			Animation2D.init();
-			
 			_renderRect = new Rectangle(0,0,_width,_height);
 			
 			_displayList = new Vector.<Sprite2D>;
@@ -108,7 +106,6 @@ package org.rixel.Core.main
 				sWidth = s2D.width;
 				sHeight = s2D.height;
 				
-				
 				if(sX < 0)
 				{
 					rectXOffset = sX * -1;
@@ -137,8 +134,7 @@ package org.rixel.Core.main
 					rectHeightOffset = 0;
 				}
 				
-				_canvasData.copyPixels(s2D.rixel::frame,new Rectangle(rectXOffset,rectYOffset,sWidth + rectXOffset - rectWidthOffset,sHeight + rectYOffset - rectHeightOffset),new Point(sX,sY) );
-
+					_canvasData.copyPixels(s2D.rixel::frame,new Rectangle(rectXOffset,rectYOffset,sWidth + rectXOffset - rectWidthOffset,sHeight + rectYOffset - rectHeightOffset),new Point(sX,sY) );
 			
 				
 			}
@@ -172,6 +168,13 @@ package org.rixel.Core.main
 		
 		
 		////////////////////GETTERS SETTERS////////////////
+		
+		
+		////////////////////STATICS////////////////////////
+		public static function init():void
+		{
+			Sprite2D.rixel::init();
+		}
 		
 	}
 }
