@@ -15,22 +15,53 @@ package org.rixel.Core.displayObjects
 		
 		protected var _imageData:BitmapData;
 		protected var _dataLoaded:Boolean;
+		protected var _params:Object;
 		
-		public function DisplayObject2D()
+		public function DisplayObject2D(params:Object = null)
 		{
+			if(params == null)
+			{
+				_params = {};
+			}else{
+				_params = params;
+			}
+			
+			
 			init();
 		}
 		
-		protected function init():void
+		private function init():void
 		{
 			_width = 0;
 			_height = 0;
 			_x = 0;
 			_y = 0;
-			_alpha = 1;
-			_transparent = true;
-			_fillColor = 0xFFFFFF;
 			_dataLoaded = false;
+			
+			
+			if( _params.hasOwnProperty("transparent") )
+			{
+				_transparent = _params['transparent'];
+			}else{
+				
+				_transparent = true;
+			}
+			
+			if( _params.hasOwnProperty("fillColor") )
+			{
+				_fillColor = _params['fillColor'];
+			}else{
+				
+				_fillColor = 0xFFFFFF;
+			}
+			
+			if( _params.hasOwnProperty("alpha") )
+			{
+				_alpha = _params['alpha'];
+			}else{
+				
+				_alpha = 1;
+			}
 		}
 		
 		/////////////////////CALLBACKS////////////////////
@@ -101,27 +132,6 @@ package org.rixel.Core.displayObjects
 				return new BitmapData(1,1,true,0xffffff);
 			}
 		}
-		
-		public function get transparent():Boolean
-		{
-			return _transparent;
-		}
-		
-		public function set transparent(value:Boolean):void
-		{
-			_transparent = value;
-		}
-		
-		public function get fillColor():uint
-		{
-			return _fillColor;
-		}
-		
-		public function set fillColor(value:uint):void
-		{
-			_fillColor = value;
-		}
-		
 		
 	}
 }
