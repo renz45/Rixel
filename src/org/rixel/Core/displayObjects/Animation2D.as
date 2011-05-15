@@ -5,16 +5,18 @@ package org.rixel.Core.displayObjects
 	import flash.display.Sprite;
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
+	import flash.utils.flash_proxy;
 	
 	import mx.charts.chartClasses.InstanceCache;
+	import mx.core.MovieClipAsset;
+	import mx.core.mx_internal;
 	
-	import org.rixel.Core.displayObjects.VO.DisplayObject_VO;
+	import org.osflash.signals.Signal;
+	import org.rixel.Core.displayObjects.VO.Sprite_VO;
 	import org.rixel.Core.nameSpaces.rixel;
-	import org.rixel.Core.utils.ClipFrameManager;
-
+	
 	public class Animation2D extends Sprite2D
 	{
-		private var _imageDataFrames:Vector.<BitmapData>;
 		private var _currentFrame:int;
 		private var _totalFrames:int;
 		private var _isPlaying:Boolean;
@@ -26,34 +28,68 @@ package org.rixel.Core.displayObjects
 		private var _xOffsetMax:Number;
 		private var _yOffsetMax:Number;
 		
-		private var _id:int;
+		private var _imageDataFrames:Vector.<BitmapData>;
 		
-		private var _frameManager:ClipFrameManager;
+		public var Event_MovieclipLoaded:Signal;
 		
-		
-		private static var _clipList:Vector.<Vector.<BitmapData>>;
-		private static var _clipInfoList:Object;
-		
-		public function Animation2D()
+		public function Animation2D(movieclip:Class, params:Object = null)
 		{	
-			super();
+			super(movieclip,params);
 		}
 		
 		override protected function init():void
 		{
-			super.init();
+			Event_MovieclipLoaded = new Signal(Animation2D);
 			
 			_reverse = false;
 			_isPlaying = true;
 			
-			_frameManager = ClipFrameManager.getInstance();
+			var objectExists:Boolean = _displayObjectList.hasOwnProperty(_className);
+			var vo:Sprite_VO;
+			
+			var newClass:MovieClip = new _displayObjectClass();
+			
+			if( !objectExists )
+			{//name doesn't exist so go ahead and create new frame data and add the name to the  static _displayObjectList array
+				
+				if(!(newClass is MovieClip))
+				{
+					throw new Error("a movieclip param is required when creating a new type of animation2D");
+				}
+				
+				vo  = new Sprite_VO();
+				vo.name = _className;
+				
+				_displayObjectList[_className] = vo;
+			}else{//name already exists so create a animation2D and give it the information of the stored frames
+				vo = _displayObjectList[_className] as Sprite_VO;
+				
+				_xOffsetMin = vo.xOffset;
+				_yOffsetMin = vo.yOffset;
+				_imageDataFrames = vo.frames;
+				_width = vo.width;
+				_height = vo.height;
+				
+				_currentFrame = 0;
+				_dataLoaded = true;
+				_totalFrames = _imageDataFrames.length;
+				
+				Event_MovieclipLoaded.dispatch(this);
+			}
+			
+			if(!objectExists && newClass is MovieClip )
+			{	
+				convertMovieClip(newClass as MovieClip);
+			}else if(!_displayObjectClass is MovieClip){
+				throw new Error("a movieclip param is required when creating a new type of animation2D");
+			}
 		}
 		
 		private function convertMovieClip(mc:MovieClip):void
 		{
-			_imageDataFrames = new Vector.<BitmapData>;
-			
 			var container:Sprite = new Sprite();
+			
+			var frameList:Vector.<BitmapData> = new Vector.<BitmapData>;
 			
 			findMaxDimensions(mc);
 			
@@ -70,26 +106,24 @@ package org.rixel.Core.displayObjects
 				
 				var bmd:BitmapData = new BitmapData(_width,_height,_transparent,_fillColor);
 				bmd.draw(container);
-				_imageDataFrames.push(bmd);
+				frameList.push(bmd);
 			}
 			
 			_currentFrame = 0;
-			_imageData = _imageDataFrames[0];
-			
-			_totalFrames = _imageDataFrames.length;
-			
 			_dataLoaded = true;
+			_totalFrames = frameList.length;
 			
-			_clipList.push(_imageDataFrames);
+			var vo:Sprite_VO = (_displayObjectList[_className] as Sprite_VO);
 			
-			_id = _clipList.indexOf(_imageDataFrames);
+			vo.frames = frameList;
+			vo.xOffset = _xOffsetMin;
+			vo.yOffset = _yOffsetMin;
+			vo.width = _width;
+			vo.height = _height;
 			
-			mc = null;
-			container = null;
-			mc = null;
+			_imageDataFrames = vo.frames;
 			
-			
-			createVO();
+			this.Event_MovieclipLoaded.dispatch(this);
 		}
 		
 		private function findMaxDimensions(mc:MovieClip):void
@@ -149,41 +183,12 @@ package org.rixel.Core.displayObjects
 			
 			_width = maxWidth;
 			_height = maxHeight;
+			
 		}
 		
-		private function createVO():void
-		{
-			var vo:DisplayObject_VO = new DisplayObject_VO();
-			
-			vo.x = _x;
-			vo.y = _y;
-			
-			vo.xOffsetMin = _xOffsetMin;
-			vo.yOffsetMin = _yOffsetMin;
-			
-			vo.xOffsetMax = _xOffsetMax;
-			vo.yOffsetMax = _yOffsetMax;
-			
-			vo.width = _width;
-			vo.height = _height;
-			
-			vo.id = _id;
-			
-			_alpha =1;
-			_transparent = true;
-			_fillColor = 4.295;
-			
-			_reverse = false;
-			_isPlaying = true;
-			
-			_currentFrame = 0;
-			_imageData = _imageDataFrames[0];
-			
-			
-			vo.totalFrames = _totalFrames;
-		}
-
-
+		
+		
+		
 		/////////////////////CALLBACKS////////////////////
 		
 		
@@ -245,7 +250,6 @@ package org.rixel.Core.displayObjects
 		{
 			if(_dataLoaded)
 			{
-				_imageData = _imageDataFrames[_currentFrame];
 				
 				if(_isPlaying)
 				{
@@ -267,20 +271,14 @@ package org.rixel.Core.displayObjects
 					}
 				}
 				
-				return _imageData;
+				return _imageDataFrames[_currentFrame];
 			}else{
-				return new BitmapData(1,1,false,0xffffff);
+				return new BitmapData(1,1,false);
 			}
 			
 		}
 		
 		/////////////////////statics///////////////////
-		
-		public static function init():void
-		{
-			_clipList = new Vector.<Vector.<BitmapData>>;
-			_clipInfoList = {};
-		}
 		
 	}
 }
