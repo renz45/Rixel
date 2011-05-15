@@ -20,7 +20,7 @@ package org.rixel.Core.displayObjects
 		private var _currentFrame:int;
 		private var _totalFrames:int;
 		private var _isPlaying:Boolean;
-		private var _reverse:Boolean;
+		private var _playDirection:int;
 		
 		private var _xOffsetMin:Number;
 		private var _yOffsetMin:Number;
@@ -39,16 +39,20 @@ package org.rixel.Core.displayObjects
 		
 		override protected function init():void
 		{
+			//signals event code
 			Event_MovieclipLoaded = new Signal(Animation2D);
 			
-			_reverse = false;
+			//set defaults, -1 for reverse play
+			_playDirection = 1;
 			_isPlaying = true;
 			
+			//create a boolean which tests of our static object has a name in its list that matches the given class
 			var objectExists:Boolean = _displayObjectList.hasOwnProperty(_className);
 			var vo:Sprite_VO;
 			
 			var newClass:MovieClip = new _displayObjectClass();
 			
+			//if the class doesnt exist than make a new slot in the object and create a sprite_VO to go in the slot
 			if( !objectExists )
 			{//name doesn't exist so go ahead and create new frame data and add the name to the  static _displayObjectList array
 				
@@ -74,23 +78,28 @@ package org.rixel.Core.displayObjects
 				_dataLoaded = true;
 				_totalFrames = _imageDataFrames.length;
 				
+				//dispatch loaded event
 				Event_MovieclipLoaded.dispatch(this);
 			}
 			
+			//if the class name doesn't exist in our list and the class given is a decendant of a movieclip, than takes a new instance of the class
+			//and pass it to the movieclip conversion function
 			if(!objectExists && newClass is MovieClip )
 			{	
 				convertMovieClip(newClass as MovieClip);
 			}else if(!_displayObjectClass is MovieClip){
-				throw new Error("a movieclip param is required when creating a new type of animation2D");
+				throw new Error("a movieclip class is required when creating a new type of animation2D");
 			}
 		}
 		
+		//takes a movieclip and converts the frames into a vector of bitmap data
 		private function convertMovieClip(mc:MovieClip):void
 		{
 			var container:Sprite = new Sprite();
 			
 			var frameList:Vector.<BitmapData> = new Vector.<BitmapData>;
 			
+			//finds max dimensions and offsets.
 			findMaxDimensions(mc);
 			
 			mc.x = _xOffsetMin;
@@ -100,6 +109,7 @@ package org.rixel.Core.displayObjects
 			_width += _xOffsetMax;
 			_height += _yOffsetMax;
 			
+			//loop through the frames and draw bitmap data to a vector array
 			for(var i:int = 0; i < mc.totalFrames; i++ )
 			{
 				mc.gotoAndStop(i);
@@ -109,10 +119,12 @@ package org.rixel.Core.displayObjects
 				frameList.push(bmd);
 			}
 			
+			//set defaults
 			_currentFrame = 0;
 			_dataLoaded = true;
 			_totalFrames = frameList.length;
 			
+			//create a new VO for the static object which holds the vector of frames and other information needed to create a new animation of this type
 			var vo:Sprite_VO = (_displayObjectList[_className] as Sprite_VO);
 			
 			vo.frames = frameList;
@@ -123,9 +135,13 @@ package org.rixel.Core.displayObjects
 			
 			_imageDataFrames = vo.frames;
 			
+			//dispatch loaded event
 			this.Event_MovieclipLoaded.dispatch(this);
 		}
 		
+		//this method loops through all the frames of a movieclip and finds max width and max heights. It also finds offsets so we can account
+		//for registration points that aren't in the top left.
+		//This solves the problem of a rotating object getting it's corners cut off during the rotation cycle, and movieclips that contain sliding animation
 		private function findMaxDimensions(mc:MovieClip):void
 		{
 			var maxWidth:Number = 0;
@@ -194,7 +210,12 @@ package org.rixel.Core.displayObjects
 		
 		////////////////////PUBLIC METHODS////////////////
 		
-		
+		/**
+		 * Moves the playhead to the specified frame number. Will default to 0 if the frame is a negative number and default to the last frame
+		 * if a value out of bounds is chosen. 
+		 * @param frameNumber
+		 * 
+		 */		
 		public function gotoAndStop(frameNumber:int):void
 		{
 			if(frameNumber >= _totalFrames)
@@ -214,14 +235,6 @@ package org.rixel.Core.displayObjects
 		{
 			
 		}
-		
-		public function setMovieClipReference(movieClip:MovieClip, name:String):void
-		{
-			
-			convertMovieClip(movieClip);
-		}
-		
-		
 		////////////////////GETTERS SETTERS////////////////
 		
 		public function get currentFrame():int
@@ -234,8 +247,31 @@ package org.rixel.Core.displayObjects
 			return _totalFrames;
 		}
 		
+		public function set reverse(value:Boolean):void
+		{
+			if(value)
+			{
+				_playDirection = -1;
+			}else{
+				_playDirection = 1;
+			}
+		}
 		
-		//////////////////ending specific/////////////
+		public function get reverse():Boolean
+		{
+			if(_playDirection == -1)
+			{
+				return true;
+			}else{
+				return false;
+			}
+		}
+		
+		
+		//////////////////engine specific/////////////
+		
+		//these render values will account for the offset of the movieclip. So if a registration point was in the center the position will be the same
+		//the function is a engine specific function since users don't need to see these values.
 		rixel function get renderX():Number
 		{
 			return _x - _xOffsetMin;
@@ -246,36 +282,27 @@ package org.rixel.Core.displayObjects
 			return _y - _yOffsetMin;
 		}
 		
+		//engine specific function used by the Stage2D to render the image.
 		rixel function get frame():BitmapData
 		{
 			if(_dataLoaded)
 			{
-				
 				if(_isPlaying)
 				{
-					if(_reverse)
+					_currentFrame += _playDirection;
+					
+					if(_currentFrame > _totalFrames - 1)
 					{
-						if(_currentFrame == 0)
-						{
-							_currentFrame = _totalFrames - 1;
-						}else{
-							_currentFrame --;
-						}
-					}else{
-						if(_currentFrame == _totalFrames - 1)
-						{
-							_currentFrame = 0;
-						}else{
-							_currentFrame ++;
-						}
-					}
+						_currentFrame = 0;
+					}else if(_currentFrame < 0)
+					{
+						_currentFrame = _totalFrames - 1;
+					}	
 				}
-				
 				return _imageDataFrames[_currentFrame];
 			}else{
 				return new BitmapData(1,1,false);
 			}
-			
 		}
 		
 		/////////////////////statics///////////////////
