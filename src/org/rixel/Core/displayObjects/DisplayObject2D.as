@@ -2,6 +2,8 @@ package org.rixel.Core.displayObjects
 {
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
+	
+	import org.osflash.signals.Signal;
 
 	public class DisplayObject2D
 	{
@@ -16,6 +18,8 @@ package org.rixel.Core.displayObjects
 		protected var _imageData:BitmapData;
 		protected var _dataLoaded:Boolean;
 		protected var _params:Object;
+		
+		public var Event_MovieclipLoaded:Signal;
 		
 		public function DisplayObject2D(params:Object = null)
 		{
@@ -32,6 +36,9 @@ package org.rixel.Core.displayObjects
 		
 		private function init():void
 		{
+			//signals event code
+			Event_MovieclipLoaded = new Signal(DisplayObject2D);
+			
 			_width = 0;
 			_height = 0;
 			_x = 0;
