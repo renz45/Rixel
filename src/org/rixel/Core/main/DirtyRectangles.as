@@ -5,7 +5,7 @@ package org.rixel.Core.main
 	import org.rixel.Core.displayObjects.Sprite2D;
 	import org.rixel.Core.nameSpaces.rixel;
 
-	public class Stage2DUtils
+	public class DirtyRectangles
 	{
 		
 		rixel function getRedrawAreas(displayList:Vector.<Sprite2D>):Vector.<Rectangle>
