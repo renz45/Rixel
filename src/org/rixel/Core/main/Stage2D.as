@@ -105,7 +105,7 @@ package org.rixel.Core.main
 
 			//_buffer1.lock();
 			
-			var redrawAreas:Vector.<Rectangle> = Stage2DUtils.rixel::getRedrawAreas(_displayList);
+			var redrawAreas:Vector.<Rectangle> = DirtyRectangles.rixel::getRedrawAreas(_displayList);
 			
 			//double buffer
 			if(_bmpCanvas.bitmapData == _buffer1)
