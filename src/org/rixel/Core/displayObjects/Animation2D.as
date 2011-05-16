@@ -15,8 +15,14 @@ package org.rixel.Core.displayObjects
 	import org.rixel.Core.displayObjects.VO.Sprite_VO;
 	import org.rixel.Core.nameSpaces.rixel;
 	
+	use namespace rixel;
+	
 	public class Animation2D extends Sprite2D
 	{
+		//not sure why I have to put this in the class definition and the import block, but I keep getting errors without it in both places.
+		//suspecting a bug someplace when overriding namespace functions
+		use namespace rixel;
+		
 		private var _currentFrame:int;
 		private var _totalFrames:int;
 		private var _isPlaying:Boolean;
@@ -30,18 +36,13 @@ package org.rixel.Core.displayObjects
 		
 		private var _imageDataFrames:Vector.<BitmapData>;
 		
-		public var Event_MovieclipLoaded:Signal;
-		
 		public function Animation2D(movieclip:Class, params:Object = null)
 		{	
 			super(movieclip,params);
 		}
 		
 		override protected function init():void
-		{
-			//signals event code
-			Event_MovieclipLoaded = new Signal(Animation2D);
-			
+		{	
 			//set defaults, -1 for reverse play
 			_playDirection = 1;
 			_isPlaying = true;
@@ -202,9 +203,6 @@ package org.rixel.Core.displayObjects
 			
 		}
 		
-		
-		
-		
 		/////////////////////CALLBACKS////////////////////
 		
 		
@@ -229,6 +227,9 @@ package org.rixel.Core.displayObjects
 				_currentFrame = frameNumber;
 				_imageData = _imageDataFrames[frameNumber];
 			}
+			
+			_isPlaying = false;
+			_dirty = true;
 		}
 		
 		public function gotoAndPlay(reverse:Boolean = false):void
@@ -272,18 +273,18 @@ package org.rixel.Core.displayObjects
 		
 		//these render values will account for the offset of the movieclip. So if a registration point was in the center the position will be the same
 		//the function is a engine specific function since users don't need to see these values.
-		rixel function get renderX():Number
+		override rixel function get renderX():Number
 		{
 			return _x - _xOffsetMin;
 		}
 		
-		rixel function get renderY():Number
+		override rixel function get renderY():Number
 		{
 			return _y - _yOffsetMin;
 		}
 		
 		//engine specific function used by the Stage2D to render the image.
-		rixel function get frame():BitmapData
+		override rixel function get frame():BitmapData
 		{
 			if(_dataLoaded)
 			{
@@ -298,6 +299,9 @@ package org.rixel.Core.displayObjects
 					{
 						_currentFrame = _totalFrames - 1;
 					}	
+					_dirty = true; 
+				}else{
+					_dirty = false;
 				}
 				return _imageDataFrames[_currentFrame];
 			}else{
