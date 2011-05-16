@@ -6,13 +6,22 @@ package org.rixel.Core.displayObjects
 	
 	import org.rixel.Core.displayObjects.VO.Sprite_VO;
 	import org.rixel.Core.nameSpaces.rixel;
+	
+	use namespace rixel;
 
 	public class Sprite2D extends DisplayObject2D
 	{	
+		use namespace rixel;
+		
 		protected var _className:String;
 		protected var _displayObjectClass:Class;
+		protected var _dirty:Boolean;
+		
+		private var _frameData:BitmapData;
 		
 		protected static var _displayObjectList:Object;
+		
+		use namespace rixel;
 		
 		public function Sprite2D(sprite:Class, params:Object = null)
 		{
@@ -26,6 +35,8 @@ package org.rixel.Core.displayObjects
 		
 		protected function init():void
 		{	
+			_dirty = false;
+			
 			var objectExists:Boolean = _displayObjectList.hasOwnProperty(_className);
 			
 			if( !objectExists )
@@ -38,9 +49,18 @@ package org.rixel.Core.displayObjects
 			
 			if(!objectExists && _displayObjectClass is Sprite )
 			{
-				//create sprite assets
+				convertSprite(new _displayObjectClass as Sprite);
 			}
 
+		}
+		
+		private function convertSprite(sprite:Sprite):void
+		{
+			_frameData = new BitmapData(sprite.width,sprite.height,_transparent,_fillColor);
+			
+			_frameData.draw(sprite);
+			
+			Event_MovieclipLoaded.dispatch(this);
 		}
 
 		/////////////////////CALLBACKS////////////////////
@@ -61,14 +81,44 @@ package org.rixel.Core.displayObjects
 			_className = value;
 		}
 		
+		//////////////////engine specific/////////////
+		
+		//these render values will account for the offset of the movieclip. So if a registration point was in the center the position will be the same
+		//the function is a engine specific function since users don't need to see these values.
+		rixel function get renderX():Number
+		{
+			return _x;
+		}
+		
+		rixel function get renderY():Number
+		{
+			return _y;
+		}
+		
+		//engine specific function used by the Stage2D to render the image.
+		rixel function get frame():BitmapData
+		{
+			
+			//will change this when sprite2D functionality is built
+			return new BitmapData(1,1,false);
+			
+		}
 
+		rixel function get dirty():Boolean
+		{
+			return _dirty;
+		}
+		
+		rixel function set dirty(value:Boolean):void
+		{
+			_dirty = value;
+		}
+		
 		///////////////////STATICS////////////////////////
 		rixel static function init():void
 		{
 			_displayObjectList = {};
 		}
-
-		
 
 		
 	}
