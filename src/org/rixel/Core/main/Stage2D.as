@@ -7,6 +7,9 @@ package org.rixel.Core.main
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import flash.system.System;
+	
+	import mx.managers.SystemManager;
 	
 	import org.rixel.Core.displayObjects.Animation2D;
 	import org.rixel.Core.displayObjects.Sprite2D;
@@ -25,7 +28,8 @@ package org.rixel.Core.main
 		private var _renderMode:String;
 		private var _displayList:Vector.<Sprite2D>;
 		private var _bmpCanvas:Bitmap;
-		private var _canvasData:BitmapData;
+		private var _buffer1:BitmapData;
+		private var _buffer2:BitmapData;
 		private var _renderRect:Rectangle;
 		 
 		
@@ -56,9 +60,10 @@ package org.rixel.Core.main
 			//GPU rendering mode setup
 			if(_renderMode == Stage2D.BLIT_RENDERER)
 			{
-				_canvasData = new BitmapData(_width,_height,_transparent,_bgColor);
+				_buffer1 = new BitmapData(_width,_height,_transparent,_bgColor);
+				_buffer2 = new BitmapData(_width,_height,_transparent,_bgColor);
 				
-				_bmpCanvas = new Bitmap(_canvasData,"auto",_smoothing);
+				_bmpCanvas = new Bitmap(_buffer1,"auto",_smoothing);
 				//_bmpCanvas = new Bitmap(null,"auto",_smoothing);
 				
 				this.addChild(_bmpCanvas);
@@ -97,12 +102,25 @@ package org.rixel.Core.main
 			
 			var point:Point = new Point();
 			var rect:Rectangle = new Rectangle();
+
+			//_buffer1.lock();
 			
-			_canvasData.lock();
+			var redrawAreas:Vector.<Rectangle> = Stage2DUtils.rixel::getRedrawAreas(_displayList);
 			
-			_canvasData.fillRect( _renderRect,0xFFFFFF);
+			//double buffer
+			if(_bmpCanvas.bitmapData == _buffer1)
+			{
+				_buffer1.fillRect( _renderRect,0xFFFFFF);
+				_bmpCanvas.bitmapData = _buffer2;
+			}else{
+				_buffer1.fillRect( _renderRect,0xFFFFFF);
+				_bmpCanvas.bitmapData = _buffer1;
+			}
 			
-			for each(var s2D:Animation2D in _displayList)
+			///_bmpCanvas.bitmapData = _drawnLast;
+			
+			
+			for each(var s2D:Sprite2D in _displayList)
 			{
 				sX = s2D.rixel::renderX;
 				sY = s2D.rixel::renderY;
@@ -111,6 +129,7 @@ package org.rixel.Core.main
 				point.x = sX;
 				point.y = sY;
 				
+				//these conditionals perform screen clipping. So if an object has part that is off the stage, those pixels aren't drawn internally
 				if(sX < 0)
 				{
 					rectXOffset = sX * -1;
@@ -144,11 +163,18 @@ package org.rixel.Core.main
 				rect.width = sWidth + rectXOffset - rectWidthOffset;
 				rect.height = sHeight + rectYOffset - rectHeightOffset;
 				
-				_canvasData.copyPixels(s2D.rixel::frame,rect, point);
+				if(_bmpCanvas.bitmapData == _buffer1)
+				{
+					_buffer2.copyPixels(s2D.rixel::frame,rect, point);
+				}else{
+					_buffer1.copyPixels(s2D.rixel::frame,rect, point);
+				}
 			}
 			
-			_canvasData.unlock(); 
+		//	_buffer1.unlock(); 
 		}
+		
+		
 		
 		private function graphicRenderer():void
 		{
@@ -164,7 +190,7 @@ package org.rixel.Core.main
 		public function addChild2D(child:Sprite2D):Sprite2D
 		{
 			_displayList.push(child);
-				
+			
 			return child;
 		}
 		
