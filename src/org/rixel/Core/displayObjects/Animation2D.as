@@ -20,7 +20,7 @@ package org.rixel.Core.displayObjects
 	public class Animation2D extends Sprite2D
 	{
 		//not sure why I have to put this in the class definition and the import block, but I keep getting errors without it in both places.
-		//suspecting a bug someplace when overriding namespace functions
+		//suspecting a bug someplace in flash when overriding namespace functions
 		use namespace rixel;
 		
 		private var _currentFrame:int;
@@ -46,6 +46,7 @@ package org.rixel.Core.displayObjects
 			//set defaults, -1 for reverse play
 			_playDirection = 1;
 			_isPlaying = true;
+			_dirty = true;
 			
 			//create a boolean which tests of our static object has a name in its list that matches the given class
 			var objectExists:Boolean = _displayObjectList.hasOwnProperty(_className);
@@ -236,6 +237,16 @@ package org.rixel.Core.displayObjects
 		{
 			
 		}
+		
+		public function play():void
+		{
+			_isPlaying = true;
+		}
+		
+		public function stop():void
+		{
+			_isPlaying = false;
+		}
 		////////////////////GETTERS SETTERS////////////////
 		
 		public function get currentFrame():int
@@ -298,7 +309,8 @@ package org.rixel.Core.displayObjects
 					}else if(_currentFrame < 0)
 					{
 						_currentFrame = _totalFrames - 1;
-					}	
+					}
+					
 					_dirty = true; 
 				}else{
 					_dirty = false;
