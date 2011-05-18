@@ -1,6 +1,7 @@
 package org.rixel.Core.Geometry
 {
 	import flash.geom.Point;
+	import flash.geom.Rectangle;
 
 	public class Rectangle2D
 	{
@@ -23,7 +24,23 @@ package org.rixel.Core.Geometry
 		////////////////////PUBLIC METHODS/////////////////
 		public function intersects(rectangle2D:Rectangle2D):Boolean
 		{	
-			if(this.x < rectangle2D.x + rectangle2D.width && this.x > rectangle2D.x && this.y < rectangle2D.y + rectangle2D.height && this.y > rectangle2D.y )
+			var r1Left:Number = _x;
+			var r1Top:Number = _y;
+			var r1Right:Number = _x + _width;
+			var r1Bottom:Number = _y + _height;
+			
+			var r2Left:Number = rectangle2D.x;
+			var r2Top:Number = rectangle2D.y;
+			var r2Right:Number = rectangle2D.x + rectangle2D.width;
+			var r2Bottom:Number = rectangle2D.y + rectangle2D.height;
+			
+			
+			
+			if(!(r1Left > r2Right ||
+				r1Top > r2Bottom ||
+				r1Right < r2Left ||
+				r1Bottom < r2Top)
+			  )
 			{
 				return true;
 			}
@@ -33,29 +50,46 @@ package org.rixel.Core.Geometry
 		
 		public function merge(rectangle2D:Rectangle2D):Rectangle2D
 		{
-			var rect:Rectangle2D = new Rectangle2D();
 			
 			var xMax:Number = 0;
 			var xMin:Number = 0;
 			var yMax:Number = 0;
 			var yMin:Number = 0;
 			
-			if(this.x > rectangle2D.x)
+			var thisLowerX:Number = this.x + this.width;
+			var thisLowerY:Number = this.y + this.height;
+			var thatLowerX:Number = rectangle2D.x + rectangle2D.width;
+			var thatLowerY:Number = rectangle2D.y + rectangle2D.height;
+			
+			if(this.x < rectangle2D.x)
 			{
-				xMax = this.x;
+				xMin = this.x;
 			}else{
-				xMax = rectangle2D.x;
+				xMin = rectangle2D.x;
 			}
 			
-			if(this.y > rectangle2D.y)
+			if(this.y < rectangle2D.y)
 			{
-				yMax = this.y;
+				yMin = this.y;
 			}else{
-				yMax = rectangle2D.y;
+				yMin = rectangle2D.y;
 			}
 			
+			if(thisLowerX > thatLowerX)
+			{
+				xMax = thisLowerX; 
+			}else{
+				xMax = thatLowerX;
+			}
 			
-			return rect;
+			if(thisLowerY > thatLowerY)
+			{
+				yMax = thisLowerY; 
+			}else{
+				yMax = thatLowerY;
+			}
+			
+			return new Rectangle2D(xMin,yMin, xMax - xMin,yMax - yMin);
 		}
 		
 		
