@@ -11,11 +11,14 @@ package org.rixel.Core.main
 	
 	import mx.managers.SystemManager;
 	
+	import org.rixel.Core.Geometry.Rectangle2D;
 	import org.rixel.Core.displayObjects.Animation2D;
 	import org.rixel.Core.displayObjects.Sprite2D;
 	import org.rixel.Core.nameSpaces.rixel;
 	
 	import spark.components.mediaClasses.VolumeBar;
+	
+	use namespace rixel;
 	
 	public class Stage2D extends Sprite 
 	{
@@ -28,11 +31,16 @@ package org.rixel.Core.main
 		private var _renderMode:String;
 		private var _displayList:Vector.<Sprite2D>;
 		private var _bmpCanvas:Bitmap;
-		private var _buffer1:BitmapData;
-		private var _buffer2:BitmapData;
+		private var _bitmapBuffer:BitmapData;
 		private var _renderRect:Rectangle;
-		 
 		
+		private var _debugCanvas:Sprite;
+		private var _debugMode:Boolean;
+		
+		private var _dirtyRect:DirtyRectangles = new DirtyRectangles();
+		
+		private var _dirtyRectangles:Boolean;
+		 
 		public static const GRAPHIC_RENDERER:String = "graphicRenderer";
 		public static const BLIT_RENDERER:String = "blitRenderer";
 		
@@ -57,19 +65,19 @@ package org.rixel.Core.main
 			
 			_displayList = new Vector.<Sprite2D>;
 			
+			_debugMode = false;
+			
+			_dirtyRectangles = false;
+			
 			//GPU rendering mode setup
 			if(_renderMode == Stage2D.BLIT_RENDERER)
 			{
-				_buffer1 = new BitmapData(_width,_height,_transparent,_bgColor);
-				_buffer2 = new BitmapData(_width,_height,_transparent,_bgColor);
+				_bitmapBuffer = new BitmapData(_width,_height,_transparent,_bgColor);
 				
-				_bmpCanvas = new Bitmap(_buffer1,"auto",_smoothing);
-				//_bmpCanvas = new Bitmap(null,"auto",_smoothing);
+				_bmpCanvas = new Bitmap(_bitmapBuffer,"auto",_smoothing);
 				
 				this.addChild(_bmpCanvas);
 			}
-			
-			
 		}
 		
 		/////////////////////CALLBACKS////////////////////
@@ -78,17 +86,23 @@ package org.rixel.Core.main
 		////////////////////PUBLIC METHODS/////////////////
 		public function render():void
 		{
-			if(_renderMode == Stage2D.BLIT_RENDERER)
+			switch(_renderMode)
 			{
-				blitRenderer();
-			}else if(_renderMode == Stage2D.GRAPHIC_RENDERER){
-				graphicRenderer();
+				case Stage2D.BLIT_RENDERER:
+					blitRenderer();
+					break;
+				case Stage2D.GRAPHIC_RENDERER:
+					graphicRenderer();
+					break;
 			}
 			
 		}
 		
+		//this is the render loop for the blit render engine, it looks a bit cluttered instead of abstracting parts out and splitting it up
+		//because it's more efficient to keep everything directly in the loop and make as few function calls as possible.
 		private function blitRenderer():void
-		{	
+		{
+			
 			var rectXOffset:Number;
 			var rectYOffset:Number
 			
@@ -102,23 +116,64 @@ package org.rixel.Core.main
 			
 			var point:Point = new Point();
 			var rect:Rectangle = new Rectangle();
-
-			//_buffer1.lock();
 			
-			var redrawAreas:Vector.<Rectangle> = DirtyRectangles.rixel::getRedrawAreas(_displayList);
+			var redrawList:Vector.<Rectangle2D>;
 			
-			//double buffer
-			if(_bmpCanvas.bitmapData == _buffer1)
+			
+			var drawThis:Boolean;
+			
+			//double buffer where bitmap data is alternatly switched out of the bitmap to copy pixels and swapped back in after
+		/*	if(_bmpCanvas.bitmapData == _buffer1)
 			{
-				_buffer1.fillRect( _renderRect,0xFFFFFF);
+				dataToDraw = _buffer1;
 				_bmpCanvas.bitmapData = _buffer2;
 			}else{
-				_buffer1.fillRect( _renderRect,0xFFFFFF);
+				dataToDraw = _buffer2;
 				_bmpCanvas.bitmapData = _buffer1;
+			}*/
+			
+			_renderRect.x = 0;
+			_renderRect.y = 0;
+			_renderRect.width = _bitmapBuffer.width;
+			_renderRect.height = _bitmapBuffer.height;
+			point.x = 0;
+			point.y = 0;
+			
+			//_bitmapBuffer.fillRect( _renderRect,0xeeeeee);
+			
+			//dirty rectangle system so we only redraw object that change, this should be used when the number of objects on the screen is low,
+			//and when those objects are small or medium sized in relation to each other.
+			//If there are a lot of objects where the entire screen will get redrawn anyways this technique will actually slow down the 
+			//rendering a lot and it will be faster to disable this mode and do brute force fullscreen renders.
+			if(_dirtyRectangles)
+			{
+				redrawList = _dirtyRect.rixel::getRedrawAreas(_displayList);
+				
+				for each(var dirtyRect2:Rectangle2D in redrawList)
+				{
+					_renderRect.x = dirtyRect2.x;
+					_renderRect.y = dirtyRect2.y;
+					_renderRect.width = dirtyRect2.width;
+					_renderRect.height = dirtyRect2.height;
+					
+					_bitmapBuffer.fillRect( _renderRect,0xFFFFFF);
+				}
+				
+				if(_debugMode)
+				{
+					_debugCanvas.graphics.clear();
+					_debugCanvas.graphics.lineStyle(1,0xff0000);
+					for each(var dirtyRectDebug:Rectangle2D in redrawList)
+					{
+						_debugCanvas.graphics.drawRect(dirtyRectDebug.x,dirtyRectDebug.y,dirtyRectDebug.width,dirtyRectDebug.height);
+					}
+				}
+			}else{
+				_bitmapBuffer.fillRect( _renderRect,0xFFFFFF);
 			}
 			
-			///_bmpCanvas.bitmapData = _drawnLast;
-			
+			//the actual pixel output is contained in this loop with the copyPixel method
+			drawThis = false;
 			
 			for each(var s2D:Sprite2D in _displayList)
 			{
@@ -129,59 +184,118 @@ package org.rixel.Core.main
 				point.x = sX;
 				point.y = sY;
 				
-				//these conditionals perform screen clipping. So if an object has part that is off the stage, those pixels aren't drawn internally
-				if(sX < 0)
+				
+				if(s2D.dirty == false && _dirtyRectangles)
 				{
-					rectXOffset = sX * -1;
+					for each(var r2D:Rectangle2D in redrawList)
+					{
+						//if the dirty rectangle and a non dirty rectangle intersect
+						if(!(sX > r2D.x + r2D.width ||
+							sY > r2D.y + r2D.height ||
+							sX + sWidth < r2D.x ||
+							sY + sHeight < r2D.y)
+						)
+						{
+
+							drawThis = false;
+							
+							
+							if(sX - r2D.x < 0)
+							{
+								rect.x = (sX - r2D.x) * -1;
+								rect.width = sWidth - (sX - r2D.x) * -1;
+								point.x = sX + (sX - r2D.x) * -1;
+							}else{
+								rect.x = 0;
+								rect.width = sWidth - (sX - r2D.x);
+								point.x = sX;
+							}
+							
+							if(sY - r2D.y < 0)
+							{
+								rect.y = (sY - r2D.y) * -1;
+								rect.height = sHeight - (sY - r2D.y) * -1;
+								point.y = sY + (sY - r2D.y) * -1 - 1;
+							}else{
+								rect.y = 0;
+								rect.height = sHeight - (sY - r2D.y);
+								point.y = sY +1;
+							}
+							
+							_bitmapBuffer.lock();
+							_bitmapBuffer.copyPixels(s2D.rixel::frame,rect, point);
+							_bitmapBuffer.unlock(rect);
+							
+							//break;
+						}else{
+							//drawThis = false;
+						}
+					}
+					
 				}else{
-					rectXOffset = 0;
+
+					drawThis = true;
+				}
+
+				if(drawThis)
+				{
+					//these conditionals perform screen clipping. So if an object has part that is off the stage, those pixels aren't drawn internally
+					//it's more efficient to keep this code in the loop rather then abstract it to a static class, even though it makes this code
+					//a bit more cluttered.
+					if(sX < 0)
+					{
+						rectXOffset = sX * -1;
+					}else{
+						rectXOffset = 0;
+					}
+					
+					if(sY < 0)
+					{
+						rectYOffset = sY * -1;
+					}else{
+						rectYOffset = 0;
+					}
+					
+					if(sX + sWidth > _width)
+					{
+						rectWidthOffset = (sX + sWidth) - _width;
+					}else{
+						rectWidthOffset = 0;
+					}
+					
+					if(sY + sHeight > _height)
+					{
+						rectHeightOffset = (sY + sHeight) - _height;
+					}else{
+						rectHeightOffset = 0;
+					}
+					
+					rect.x = rectXOffset;
+					rect.y = rectYOffset;
+					rect.width = sWidth + rectXOffset - rectWidthOffset;
+					rect.height = sHeight + rectYOffset - rectHeightOffset;
+					
+					//_debugCanvas.graphics.lineStyle(1,0x00ff00);
+					//_debugCanvas.graphics.drawRect(rect.x,rect.y,rect.width,rect.height);
+					
+					_bitmapBuffer.lock();
+					_bitmapBuffer.copyPixels(s2D.rixel::frame,rect, point);
+					_bitmapBuffer.unlock(rect);
+					
+					
+				
 				}
 				
-				if(sY < 0)
-				{
-					rectYOffset = sY * -1;
-				}else{
-					rectYOffset = 0;
-				}
 				
-				if(sX + sWidth > _width)
-				{
-					rectWidthOffset = (sX + sWidth) - _width;
-				}else{
-					rectWidthOffset = 0;
-				}
-				
-				if(sY + sHeight > _height)
-				{
-					rectHeightOffset = (sY + sHeight) - _height;
-				}else{
-					rectHeightOffset = 0;
-				}
-				
-				rect.x = rectXOffset;
-				rect.y = rectYOffset;
-				rect.width = sWidth + rectXOffset - rectWidthOffset;
-				rect.height = sHeight + rectYOffset - rectHeightOffset;
-				
-				if(_bmpCanvas.bitmapData == _buffer1)
-				{
-					_buffer2.copyPixels(s2D.rixel::frame,rect, point);
-				}else{
-					_buffer1.copyPixels(s2D.rixel::frame,rect, point);
-				}
 			}
-			
-		//	_buffer1.unlock(); 
 		}
-		
-		
 		
 		private function graphicRenderer():void
 		{
 			this.graphics.clear();
 			for each(var s2D:Sprite2D in _displayList)
 			{
-				this.graphics.beginBitmapFill(s2D.frame,new Matrix(1,0,0,1,s2D.x,s2D.y),false,false);
+				this.graphics.beginBitmapFill(s2D.rixel::frame,new Matrix(1,0,0,1,s2D.x,s2D.y),false,false);
 				this.graphics.drawRect(s2D.x,s2D.y,s2D.width,s2D.height);
 				this.graphics.endFill();
 			}
@@ -201,7 +315,28 @@ package org.rixel.Core.main
 		}
 		
 		
+		
 		////////////////////GETTERS SETTERS////////////////
+		
+		public function set showRedrawFrames(value:Boolean):void
+		{
+			if(value)
+			{
+				_debugCanvas = new Sprite();
+				this.addChild(_debugCanvas);
+			}else{
+				this.removeChild(_debugCanvas);
+				_debugCanvas = null;
+				
+			}
+			
+			_debugMode = value;
+		}
+		
+		public function set useDirtyRectangles(value:Boolean):void
+		{
+			_dirtyRectangles = value;
+		}
 		
 		
 		////////////////////STATICS////////////////////////
