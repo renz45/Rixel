@@ -2,8 +2,8 @@ package org.rixel.Core.main
 {
 	import flash.geom.Rectangle;
 	
-	import org.rixel.Core.Geometry.Rectangle2D;
-	import org.rixel.Core.displayObjects.Sprite2D;
+	import org.rixel.Core.Geometry.RxRectangle;
+	import org.rixel.Core.displayObjects.RxSprite;
 	import org.rixel.Core.nameSpaces.rixel;
 
 	use namespace rixel;
@@ -12,9 +12,9 @@ package org.rixel.Core.main
 	{
 		
 		
-		rixel function getRedrawAreas(displayList:Vector.<Sprite2D>):Vector.<Rectangle2D>
+		rixel function getRedrawAreas(displayList:Vector.<RxSprite>):Vector.<RxRectangle>
 		{
-			var rectList:Vector.<Rectangle2D> =  createRectangles(displayList);
+			var rectList:Vector.<RxRectangle> =  createRectangles(displayList);
 			
 			rectList = mergeIntersects(rectList);
 			
@@ -22,15 +22,15 @@ package org.rixel.Core.main
 			return rectList;
 		}
 		
-		private function createRectangles(displayList:Vector.<Sprite2D>):Vector.<Rectangle2D>
+		private function createRectangles(displayList:Vector.<RxSprite>):Vector.<RxRectangle>
 		{
-			var rectList:Vector.<Rectangle2D> = new Vector.<Rectangle2D>;
+			var rectList:Vector.<RxRectangle> = new Vector.<RxRectangle>;
 			
-			for each(var sp:Sprite2D in displayList)
+			for each(var sp:RxSprite in displayList)
 			{
 				if(sp.dirty)
 				{
-					var rect:Rectangle2D = new Rectangle2D(sp.rixel::renderX,sp.rixel::renderY,sp.width,sp.height);
+					var rect:RxRectangle = new RxRectangle(sp.rixel::renderX,sp.rixel::renderY,sp.width,sp.height);
 					rectList.push(rect);
 				}
 			}
@@ -40,20 +40,23 @@ package org.rixel.Core.main
 		
 		//this function takes a list of rectangles and recursively merges them if they are overlapping. The function will continue to call itself 
 		//until there are no overlapping rectangles left.
-		private function mergeIntersects(rectangleList:Vector.<Rectangle2D>):Vector.<Rectangle2D>
+		private function mergeIntersects(rectangleList:Vector.<RxRectangle>):Vector.<RxRectangle>
 		{
-			var mergedRectList:Vector.<Rectangle2D> = new Vector.<Rectangle2D>;
+			var mergedRectList:Vector.<RxRectangle> = new Vector.<RxRectangle>;
 			var numIntersects:int = 0;
 			var length:int = rectangleList.length;
 			
+			var rect1:RxRectangle;
+			var hasIntersected:Boolean;
+			
 			for(var i:int = 0; i < length; i++)
 			{
-				var rect1:Rectangle2D = rectangleList[i] as Rectangle2D;
-				var hasIntersected:Boolean = false;
+				rect1 = rectangleList[i] as RxRectangle;
+				hasIntersected = false;
 				
 				for(var k:int = i + 1; k < length; k++)
 				{
-					var rect2:Rectangle2D = rectangleList[k] as Rectangle2D;
+					var rect2:RxRectangle = rectangleList[k] as RxRectangle;
 					
 					if( (rect1).intersects(rect2) ) 
 					{
