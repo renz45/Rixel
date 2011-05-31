@@ -88,6 +88,7 @@ package org.osflash.signals
 		}
 		
 		/** @inheritDoc */
+		       
 		public function remove(listener:Function):ISignalBinding
 		{
 			if(binding && binding.listener == listener)
