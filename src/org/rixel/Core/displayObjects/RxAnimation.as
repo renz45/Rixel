@@ -12,17 +12,14 @@ package org.rixel.Core.displayObjects
 	import mx.core.mx_internal;
 	
 	import org.osflash.signals.Signal;
+	import org.osmf.layout.AbsoluteLayoutFacet;
 	import org.rixel.Core.displayObjects.VO.Sprite_VO;
 	import org.rixel.Core.nameSpaces.rixel;
 	
 	use namespace rixel;
 	
-	public class Animation2D extends Sprite2D
-	{
-		//not sure why I have to put this in the class definition and the import block, but I keep getting errors without it in both places.
-		//suspecting a bug someplace in flash when overriding namespace functions
-		use namespace rixel;
-		
+	public class RxAnimation extends RxSprite
+	{ 
 		private var _currentFrame:int;
 		private var _totalFrames:int;
 		private var _isPlaying:Boolean;
@@ -36,7 +33,8 @@ package org.rixel.Core.displayObjects
 		
 		private var _imageDataFrames:Vector.<BitmapData>;
 		
-		public function Animation2D(movieclip:Class, params:Object = null)
+		
+		public function RxAnimation(movieclip:Class, params:Object = null)
 		{	
 			super(movieclip,params);
 		}
@@ -52,11 +50,11 @@ package org.rixel.Core.displayObjects
 			var objectExists:Boolean = _displayObjectList.hasOwnProperty(_className);
 			var vo:Sprite_VO;
 			
-			var newClass:MovieClip = new _displayObjectClass();
-			
 			//if the class doesnt exist than make a new slot in the object and create a sprite_VO to go in the slot
 			if( !objectExists )
 			{//name doesn't exist so go ahead and create new frame data and add the name to the  static _displayObjectList array
+				
+				var newClass:MovieClip = new _displayObjectClass();
 				
 				if(!(newClass is MovieClip))
 				{
@@ -67,6 +65,9 @@ package org.rixel.Core.displayObjects
 				vo.name = _className;
 				
 				_displayObjectList[_className] = vo;
+				
+				convertMovieClip(newClass as MovieClip);
+				
 			}else{//name already exists so create a animation2D and give it the information of the stored frames
 				vo = _displayObjectList[_className] as Sprite_VO;
 				
@@ -84,14 +85,7 @@ package org.rixel.Core.displayObjects
 				Event_MovieclipLoaded.dispatch(this);
 			}
 			
-			//if the class name doesn't exist in our list and the class given is a decendant of a movieclip, than takes a new instance of the class
-			//and pass it to the movieclip conversion function
-			if(!objectExists && newClass is MovieClip )
-			{	
-				convertMovieClip(newClass as MovieClip);
-			}else if(!_displayObjectClass is MovieClip){
-				throw new Error("a movieclip class is required when creating a new type of animation2D");
-			}
+			newClass = null;
 		}
 		
 		//takes a movieclip and converts the frames into a vector of bitmap data
@@ -105,7 +99,7 @@ package org.rixel.Core.displayObjects
 			findMaxDimensions(mc);
 			
 			mc.x = _xOffsetMin;
-			mc.y = _yOffsetMin;
+			mc.y = _yOffsetMin; 
 			container.addChild(mc);
 			
 			_width += _xOffsetMax;
@@ -230,12 +224,12 @@ package org.rixel.Core.displayObjects
 			}
 			
 			_isPlaying = false;
-			_dirty = true;
 		}
 		
-		public function gotoAndPlay(reverse:Boolean = false):void
+		public function gotoAndPlay(frameNumber:int, reverse:Boolean = false):void
 		{
-			
+			gotoAndStop(frameNumber);
+			_isPlaying = true;
 		}
 		
 		public function play():void
@@ -246,6 +240,7 @@ package org.rixel.Core.displayObjects
 		public function stop():void
 		{
 			_isPlaying = false;
+			
 		}
 		////////////////////GETTERS SETTERS////////////////
 		
@@ -279,7 +274,6 @@ package org.rixel.Core.displayObjects
 			}
 		}
 		
-		
 		//////////////////engine specific/////////////
 		
 		//these render values will account for the offset of the movieclip. So if a registration point was in the center the position will be the same
@@ -299,6 +293,7 @@ package org.rixel.Core.displayObjects
 		{
 			if(_dataLoaded)
 			{
+				
 				if(_isPlaying)
 				{
 					_currentFrame += _playDirection;
@@ -317,7 +312,7 @@ package org.rixel.Core.displayObjects
 				}
 				return _imageDataFrames[_currentFrame];
 			}else{
-				return new BitmapData(1,1,false);
+				return _placeHolderData;
 			}
 		}
 		
