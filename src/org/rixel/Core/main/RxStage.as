@@ -20,7 +20,7 @@ package org.rixel.Core.main
 	
 	use namespace rixel;
 	
-	public class RxStage extends Sprite 
+	public class RxStage extends Sprite
 	{
 		private var _width:Number;
 		private var _height:Number; 
@@ -73,12 +73,12 @@ package org.rixel.Core.main
 			_width = width;
 			_height = height;
 			_transparent = false;
-			_bgColor = bgColor;
+			_bgColor = bgColor; 
 			_smoothing = smoothing;
 			
 			_renderMode = renderMode;
 			
-			init();
+			init(); 
 		}
 		
 		private function init():void
@@ -92,7 +92,7 @@ package org.rixel.Core.main
 			_dirtyRectangles = false;
 			
 			//GPU rendering mode setup
-			if(_renderMode == RxStage.BLIT_RENDERER)
+			if(_renderMode == RxStage_Old.BLIT_RENDERER)
 			{
 				_bitmapBuffer = new BitmapData(_width,_height,_transparent,_bgColor);
 				
@@ -110,10 +110,10 @@ package org.rixel.Core.main
 		{
 			switch(_renderMode)
 			{
-				case RxStage.BLIT_RENDERER:
+				case RxStage_Old.BLIT_RENDERER:
 					blitRenderer();
 					break;
-				case RxStage.GRAPHIC_RENDERER:
+				case RxStage_Old.GRAPHIC_RENDERER:
 					graphicRenderer();
 					break;
 			}
@@ -126,55 +126,6 @@ package org.rixel.Core.main
 		private function blitRenderer():void
 		{
 			_bitmapBuffer.lock();
-			
-			//enable this to show only redraw areas
-			/*_renderRect.x = 0;
-			_renderRect.y = 0;
-			_renderRect.width = _width;
-			_renderRect.height = _height;
-			_bitmapBuffer.fillRect( _renderRect,0xeeeeee);*/
-			
-			//dirty rectangle system so we only redraw object that change, this should be used when the number of objects on the screen is low,
-			//and when those objects are small or medium sized in relation to each other.
-			//If there are a lot of objects where the entire screen will get redrawn anyways this technique will actually slow down the 
-			//rendering a lot and it will be faster to disable this mode and do brute force fullscreen renders.
-			if(_dirtyRectangles)
-			{
-				redrawList = _dirtyRect.rixel::getRedrawAreas(_displayList);
-				
-				for each(var dirtyRect2:RxRectangle in redrawList)
-				{
-					_renderRect.x = dirtyRect2.x;
-					_renderRect.y = dirtyRect2.y;
-					_renderRect.width = dirtyRect2.width;
-					_renderRect.height = dirtyRect2.height;
-					
-					_bitmapBuffer.fillRect( _renderRect,0xFFFFFF);
-				}
-				
-				//if view redraw rectangles is set to true, display the rectangles
-				if(_debugMode)
-				{
-					_debugCanvas.graphics.clear();
-					_debugCanvas.graphics.lineStyle(1,0xff0000);
-					for each(var dirtyRectDebug:RxRectangle in redrawList)
-					{
-						_debugCanvas.graphics.drawRect(dirtyRectDebug.x,dirtyRectDebug.y,dirtyRectDebug.width,dirtyRectDebug.height);
-					}
-				}
-			}else{
-				_renderRect.x = 0;
-				_renderRect.y = 0;
-				_renderRect.width = _bitmapBuffer.width;
-				_renderRect.height = _bitmapBuffer.height;
-				point.x = 0;
-				point.y = 0;
-				
-				_bitmapBuffer.fillRect( _renderRect,0xFFFFFF);
-			}
-			
-			//the actual pixel output is contained in this loop with the copyPixel method
-			
 			for each(var s2D:RxSprite in _displayList)
 			{
 				sX = s2D.rixel::renderX;
@@ -183,92 +134,47 @@ package org.rixel.Core.main
 				sHeight = s2D.height;
 				point.x = sX;
 				point.y = sY;
-				
-				if(!s2D.dirty && _dirtyRectangles)
-				{
-					for each(var r2D:RxRectangle in redrawList)
-					{
-						r2X = r2D.x;
-						r2Y = r2D.y;
-						r2Width = r2D.width;
-						r2Height = r2D.height;
-						
-						//if the dirty rectangle and a non dirty rectangle intersect
-						if(!(sX > r2X + r2Width ||
-							sY > r2Y + r2D.height ||
-							sX + sWidth < r2X ||
-							sY + sHeight < r2Y)
-						)
-						{
-							//figure out what portion of the non dirty image falls onto the dirty image and copy those pixels
-							if(sX - r2X < 0)
-							{
-								rect.x = -(sX - r2X);
-								rect.width = r2Width + (sX - r2X);
-								point.x = sX - (sX - r2X);
-							}else{
-								rect.x = 0;
-								rect.width = r2Width - (sX - r2X);
-								point.x = sX;
-							}
-							
-							if(sY - r2Y < 0)
-							{
-								rect.y = -(sY - r2Y);
-								rect.height = r2Height + (sY - r2Y);
-								point.y = sY - (sY - r2Y);
-							}else{
-								rect.y = 0;
-								rect.height = r2Height - (sY - r2Y);
-								point.y = sY;
-							}
-							
-							
-							_bitmapBuffer.copyPixels(s2D.rixel::frame,rect, point);
-						}
-					}
-					
-				}else{
+			
 
-					//these conditionals perform screen clipping. So if an object has part that is off the stage, those pixels aren't drawn internally
-					//it's more efficient to keep this code in the loop rather then abstract it to a static class, even though it makes this code
-					//a bit more cluttered.
-					if(sX < 0)
-					{
-						rectXOffset = -sX;
-					}else{
-						rectXOffset = 0;
-					}
-					
-					if(sY < 0)
-					{
-						rectYOffset = -sY;
-					}else{
-						rectYOffset = 0;
-					}
-					
-					if(sX + sWidth > _width)
-					{
-						rectWidthOffset = (sX + sWidth) - _width;
-					}else{
-						rectWidthOffset = 0;
-					}
-					
-					if(sY + sHeight > _height)
-					{
-						rectHeightOffset = (sY + sHeight) - _height;
-					}else{
-						rectHeightOffset = 0; 
-					}
-					
-					rect.x = rectXOffset;
-					rect.y = rectYOffset;
-					rect.width = sWidth + rectXOffset - rectWidthOffset;
-					rect.height = sHeight + rectYOffset - rectHeightOffset;
-					
-					_bitmapBuffer.copyPixels(s2D.rixel::frame,rect, point);
+				//these conditionals perform screen clipping. So if an object has part that is off the stage, those pixels aren't drawn internally
+				//it's more efficient to keep this code in the loop rather then abstract it to a static class, even though it makes this code
+				//a bit more cluttered.
+				if(sX < 0)
+				{
+					rectXOffset = -sX;
+				}else{
+					rectXOffset = 0;
 				}
+				
+				if(sY < 0)
+				{
+					rectYOffset = -sY;
+				}else{
+					rectYOffset = 0;
+				}
+				
+				if(sX + sWidth > _width)
+				{
+					rectWidthOffset = (sX + sWidth) - _width;
+				}else{
+					rectWidthOffset = 0;
+				}
+				
+				if(sY + sHeight > _height)
+				{
+					rectHeightOffset = (sY + sHeight) - _height;
+				}else{
+					rectHeightOffset = 0; 
+				}
+				
+				rect.x = rectXOffset;
+				rect.y = rectYOffset;
+				rect.width = sWidth + rectXOffset - rectWidthOffset;
+				rect.height = sHeight + rectYOffset - rectHeightOffset;
+				
+				_bitmapBuffer.copyPixels(s2D.rixel::frame,rect, point);
 			}
+			
 			_bitmapBuffer.unlock();
 		}
 		
