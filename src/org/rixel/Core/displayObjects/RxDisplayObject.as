@@ -4,6 +4,8 @@ package org.rixel.Core.displayObjects
 	import flash.display.Sprite;
 	
 	import org.osflash.signals.Signal;
+	import org.rixel.Core.main.QuadTree;
+	import org.rixel.Core.main.QuadTreeNode;
 	import org.rixel.Core.nameSpaces.rixel;
 
 	use namespace rixel;
@@ -23,7 +25,11 @@ package org.rixel.Core.displayObjects
 		protected var _dataLoaded:Boolean;
 		protected var _params:Object;
 		
+		public var _parentNode:QuadTreeNode;
+		
 		public var Event_MovieclipLoaded:Signal;
+		
+		
 		
 		public function RxDisplayObject(params:Object = null)
 		{
@@ -135,6 +141,8 @@ package org.rixel.Core.displayObjects
 			_dirty = true;
 		}
 		
+		
+		/////////////////////INTERNAL RIXEL METHODS//////////////////
 		rixel function get frame():BitmapData
 		{
 			if(_imageData)
@@ -143,6 +151,16 @@ package org.rixel.Core.displayObjects
 			}else{
 				return new BitmapData(1,1,true,0xffffff);
 			}
+		}
+		
+		rixel function get parentNode():QuadTreeNode
+		{
+			return _parentNode;
+		}
+		
+		rixel function set parentNode(node:QuadTreeNode):void
+		{
+			_parentNode = node;
 		}
 		
 	}
