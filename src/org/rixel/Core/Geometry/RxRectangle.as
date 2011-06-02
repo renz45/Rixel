@@ -27,6 +27,18 @@ package org.rixel.Core.Geometry
 		private var _thatLowerX:Number;
 		private var _thatLowerY:Number;
 		
+		////////////////contains vars
+		private var width1:int;
+		private var height1:int;
+		
+		private var x2:int;
+		private var y2:int;
+		private var width2:int;
+		private var height2:int;
+		
+		private var x1:int;
+		private var y1:int;
+		
 		public function RxRectangle(x:int = 0,y:int = 0,width:Number = 0,height:Number = 0)
 		{
 			_width = width;
@@ -112,7 +124,59 @@ package org.rixel.Core.Geometry
 			return !(point.x < _x || point.x > _x + _width || point.y < _y || point.y > _y + _height)
 		}
 		
-		
+		public function containsRect(rxRectangle:RxRectangle):Boolean
+		{
+			width1 = _width;
+			height1 = _height;
+			
+			x2 = rxRectangle.x;
+			y2 = rxRectangle.y;
+			width2 = rxRectangle.width;
+			height2 = rxRectangle.height;
+			
+			if ((width1 | _height | width2 | height2) < 0) {
+				return false;
+			}
+
+			x1 = _x;
+			y1 = _y;
+			
+			if (x2 < x1 || y2 < y1) {
+				return false;
+			}
+			
+			width1 += x1;
+			width2 += x2;
+			
+			if (width2 <= x2) {
+				if (width1 >= x1 || width2 > width1) 
+				{
+					return false;
+				}
+			} else {
+				if (width1 >= x1 && width2 > width1)
+				{
+					return false;
+				}
+			}
+			
+			height1 += y1;
+			height2 += y2;
+			
+			if (height2 <= y2) {
+				if (height1 >= y1 || height2 > height1)
+				{
+					return false;
+				}
+			} else {
+				if (height1 >= y1 && height2 > height1)
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
 		////////////////////GETTERS SETTERS////////////////
 		public function get width():Number
 		{
