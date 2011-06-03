@@ -307,6 +307,7 @@ package org.rixel.Core.displayObjects
 					}
 					
 					_dirty = true; 
+					Event_IsDirty.dispatch(this);
 				}else{
 					_dirty = false;
 				}

@@ -6,6 +6,7 @@ package org.rixel.Core.displayObjects
 	import org.osflash.signals.Signal;
 	import org.rixel.Core.main.QuadTree;
 	import org.rixel.Core.main.QuadTreeNode;
+	import org.rixel.Core.main.QuadTreeProxy;
 	import org.rixel.Core.nameSpaces.rixel;
 
 	use namespace rixel;
@@ -25,10 +26,14 @@ package org.rixel.Core.displayObjects
 		protected var _dataLoaded:Boolean;
 		protected var _params:Object;
 		
-		public var _parentNode:QuadTreeNode;
+		public var _proxy:QuadTreeProxy;
 		
 		public var Event_MovieclipLoaded:Signal;
+		public var Event_IsDirty:Signal;
 		
+		/////////////////new quadtree
+		public var proxyId:int;
+		/////////////////
 		
 		
 		public function RxDisplayObject(params:Object = null)
@@ -47,6 +52,7 @@ package org.rixel.Core.displayObjects
 		{
 			//signals event code
 			Event_MovieclipLoaded = new Signal(RxDisplayObject);
+			Event_IsDirty = new Signal(RxDisplayObject);
 			
 			_width = 0;
 			_height = 0;
@@ -81,7 +87,6 @@ package org.rixel.Core.displayObjects
 		
 		
 		////////////////////PUBLIC METHODS/////////////////
-	
 		
 		
 		////////////////////GETTERS SETTERS////////////////
@@ -95,6 +100,7 @@ package org.rixel.Core.displayObjects
 		{
 			_x = value;
 			_dirty = true;
+			Event_IsDirty.dispatch(this);
 		}
 		
 		public function get y():Number
@@ -106,6 +112,7 @@ package org.rixel.Core.displayObjects
 		{
 			_y = value;
 			_dirty = true;
+			Event_IsDirty.dispatch(this);
 		}
 		
 		public function get width():Number
@@ -117,6 +124,7 @@ package org.rixel.Core.displayObjects
 		{
 			_width = value;
 			_dirty = true;
+			Event_IsDirty.dispatch(this);
 		}
 		
 		public function get height():Number
@@ -128,6 +136,7 @@ package org.rixel.Core.displayObjects
 		{
 			_height = value;
 			_dirty = true;
+			Event_IsDirty.dispatch(this);
 		}
 		
 		public function get alpha():Number
@@ -139,6 +148,27 @@ package org.rixel.Core.displayObjects
 		{
 			_alpha = value;
 			_dirty = true;
+			Event_IsDirty.dispatch(this);
+		}
+		
+		public function get xmin():Number
+		{
+			return _x;
+		}
+		
+		public function get xmax():Number
+		{
+			return _x + _width;
+		}
+		
+		public function get ymin():Number
+		{
+			return _y;
+		}
+		
+		public function get ymax():Number
+		{
+			return _y + _height;
 		}
 		
 		
@@ -153,14 +183,14 @@ package org.rixel.Core.displayObjects
 			}
 		}
 		
-		rixel function get parentNode():QuadTreeNode
+		rixel function get proxy():QuadTreeProxy
 		{
-			return _parentNode;
+			return _proxy;
 		}
 		
-		rixel function set parentNode(node:QuadTreeNode):void
+		rixel function set proxy(node:QuadTreeProxy):void
 		{
-			_parentNode = node;
+			_proxy = node;
 		}
 		
 	}

@@ -117,6 +117,10 @@ package org.rixel.Core.displayObjects
 		rixel function set dirty(value:Boolean):void
 		{
 			_dirty = value; 
+			if(value == true)
+			{
+				Event_IsDirty.dispatch(this);
+			}
 		}
 		
 		///////////////////STATICS////////////////////////
