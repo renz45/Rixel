@@ -265,6 +265,26 @@ package org.rixel.Core.Geometry
 			_x = _middle.x - (_width / 2);
 			_y = _middle.y - (_height / 2);
 		}
+		
+		public function get xmin():Number
+		{
+			return _x;
+		}
+		
+		public function get xmax():Number
+		{
+			return _x + _width;
+		}
+		
+		public function get ymin():Number
+		{
+			return _y;
+		}
+		
+		public function get ymax():Number
+		{
+			return _y + _height;
+		}
 
 
 	}
