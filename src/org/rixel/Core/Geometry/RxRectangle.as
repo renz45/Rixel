@@ -5,8 +5,8 @@ package org.rixel.Core.Geometry
 
 	public class RxRectangle
 	{
-		private var _width:Number;
-		private var _height:Number;
+		private var _width:int;
+		private var _height:int;
 		private var _x:int;
 		private var _y:int;
 		
@@ -16,16 +16,21 @@ package org.rixel.Core.Geometry
 		private var _bottomRight:RxPoint;
 		private var _middle:RxPoint;
 		
-		//////////Merge vars
-		private var _xMax:Number;
-		private var _xMin:Number;
-		private var _yMax:Number;
-		private var _yMin:Number;
+		private var _x2:int;
+		private var _y2:int;
+		private var _width2:int;
+		private var _height2:int;
 		
-		private var _thisLowerX:Number;
-		private var _thisLowerY:Number;
-		private var _thatLowerX:Number;
-		private var _thatLowerY:Number;
+		//////////Merge vars
+		private var _xMax:int;
+		private var _xMin:int;
+		private var _yMax:int;
+		private var _yMin:int;
+		
+		private var _thisLowerX:int;
+		private var _thisLowerY:int;
+		private var _thatLowerX:int;
+		private var _thatLowerY:int;
 		
 		////////////////contains vars
 		private var width1:int;
@@ -39,7 +44,7 @@ package org.rixel.Core.Geometry
 		private var x1:int;
 		private var y1:int;
 		
-		public function RxRectangle(x:int = 0,y:int = 0,width:Number = 0,height:Number = 0)
+		public function RxRectangle(x:int = 0,y:int = 0,width:int = 0,height:int = 0)
 		{
 			_width = width;
 			_height = height;
@@ -64,7 +69,12 @@ package org.rixel.Core.Geometry
 		////////////////////PUBLIC METHODS/////////////////
 		public function intersects(rxRectangle:RxRectangle):Boolean
 		{	
-			return	!(_x > rxRectangle.x + rxRectangle.width || _y > rxRectangle.y + rxRectangle.height || _x + _width < rxRectangle.x || _y + _height < rxRectangle.y);
+			_x2 = rxRectangle.x;
+			_y2 = rxRectangle.y;
+			_width2 = rxRectangle.width;
+			_height2 = rxRectangle.height;
+			
+			return	!(_x > _x2 + _width2 || _y > _y2 + _height2 || _x + _width < _x2 || _y + _height < _y2);
 		}
 		
 		public function merge(rxRectangle:RxRectangle):RxRectangle
@@ -178,22 +188,22 @@ package org.rixel.Core.Geometry
 		}
 
 		////////////////////GETTERS SETTERS////////////////
-		public function get width():Number
+		public function get width():int
 		{
 			return _width;
 		}
 		
-		public function set width(value:Number):void
+		public function set width(value:int):void
 		{
 			_width = value;
 		}
 		
-		public function get height():Number
+		public function get height():int
 		{
 			return _height;
 		}
 		
-		public function set height(value:Number):void
+		public function set height(value:int):void
 		{
 			_height = value;
 		}
@@ -266,22 +276,22 @@ package org.rixel.Core.Geometry
 			_y = _middle.y - (_height / 2);
 		}
 		
-		public function get xmin():Number
+		public function get xmin():int
 		{
 			return _x;
 		}
 		
-		public function get xmax():Number
+		public function get xmax():int
 		{
 			return _x + _width;
 		}
 		
-		public function get ymin():Number
+		public function get ymin():int
 		{
 			return _y;
 		}
 		
-		public function get ymax():Number
+		public function get ymax():int
 		{
 			return _y + _height;
 		}
