@@ -15,15 +15,21 @@ package org.rixel.Core.main
 	import org.rixel.Core.displayObjects.RxAnimation;
 	import org.rixel.Core.displayObjects.RxSprite;
 	import org.rixel.Core.nameSpaces.rixel;
+	import org.rixel.Core.quadTree.RxProxyBase;
+	import org.rixel.Core.quadTree.RxQuadTree;
+	import org.rixel.Core.quadTree.RxQuadTreeNode;
+	import org.rixel.Core.quadTree.RxQuadTreeProxy;
 	
 	import spark.components.mediaClasses.VolumeBar;
+	import org.rixel.oldUnusedForReference.RxStage_Old;
 	
 	use namespace rixel;
 	
 	public class RxStage extends Sprite
 	{
-		private var _width:Number;
-		private var _height:Number; 
+		private var _width:int;
+		private var _height:int; 
+		private var _padding:int
 		private var _transparent:Boolean;
 		private var _bgColor:uint;
 		private var _smoothing:Boolean;
@@ -32,14 +38,12 @@ package org.rixel.Core.main
 		private var _displayList:Vector.<RxSprite>;
 		private var _bmpCanvas:Bitmap;
 		private var _bitmapBuffer:BitmapData;
-		private var _bitmapTransform:BitmapData;
 		private var _renderRect:Rectangle;
 		
-		private var _debugCanvas:Sprite;
-		private var _debugMode:Boolean;
-		
-		private var _dirtyRect:DirtyRectangles = new DirtyRectangles();
-		private var _dirtyRectangles:Boolean;
+		private var _tree:RxQuadTree;
+		private var _debugCanvas:Sprite = new Sprite();
+		private var _debugRect:RxRectangle = new RxRectangle();
+		private var _debugNode:RxQuadTreeNode;
 		
 		//blit renderer vars
 		private var rectXOffset:Number;
@@ -53,20 +57,13 @@ package org.rixel.Core.main
 		private var sWidth:int = 0;
 		private var sHeight:int = 0;
 		
-		private var r2X:Number;
-		private var r2Y:Number;
-		private var r2Width:Number;
-		private var r2Height:Number;
-		
 		private var point:Point = new Point();
 		private var rect:Rectangle = new Rectangle();
-		
-		private var redrawList:Vector.<RxRectangle>;
  
 		public static const GRAPHIC_RENDERER:String = "graphicRenderer";
 		public static const BLIT_RENDERER:String = "blitRenderer";
 		
-		public function RxStage(width:Number,height:Number, bgColor:uint = 0xFFFFFF, smoothing:Boolean = false, renderMode:String = RxStage.BLIT_RENDERER)
+		public function RxStage(width:Number,height:Number,padding:int = 200, bgColor:uint = 0xFFFFFF, smoothing:Boolean = false, renderMode:String = RxStage.BLIT_RENDERER)
 		{
 			super();
 			
@@ -78,28 +75,31 @@ package org.rixel.Core.main
 			
 			_renderMode = renderMode;
 			
+			_padding = padding;
+			
 			init(); 
 		}
 		
 		private function init():void
 		{	
+			_tree = new RxQuadTree(5,RxQuadTree.MAX_1024_OBJECTS);
+		 	_tree.setWorldBounds(new RxRectangle(-_padding,-_padding,_width + (_padding*2),_height + (_padding*2)) );
+			
 			_renderRect = new Rectangle(0,0,_width,_height);
 			
 			_displayList = new Vector.<RxSprite>;
 			
-			_debugMode = false;
-			
-			_dirtyRectangles = false;
-			
 			//GPU rendering mode setup
 			if(_renderMode == RxStage_Old.BLIT_RENDERER)
 			{
-				_bitmapBuffer = new BitmapData(_width,_height,_transparent,_bgColor);
+				_bitmapBuffer = new BitmapData(_width,_height,true,_bgColor);
 				
 				_bmpCanvas = new Bitmap(_bitmapBuffer,"auto",_smoothing);
 				
 				this.addChild(_bmpCanvas);
 			}
+			
+			this.addChild(_debugCanvas);
 		}
 		
 		/////////////////////CALLBACKS////////////////////
@@ -125,17 +125,37 @@ package org.rixel.Core.main
 		//more organized code, but i figured the render loop needs to be as efficient as possible.
 		private function blitRenderer():void
 		{
+			//_debugCanvas.graphics.clear();
+			//_debugCanvas.graphics.lineStyle(1,0xFFaaaa);
+			
 			_bitmapBuffer.lock();
+			
+			rect.x = 0;
+			rect.y = 0;
+			rect.width = _width;
+			rect.height = _height; 
+			point.x = 0;
+			point.y = 0;
+			
+			//clear bitmap
+			_bitmapBuffer.fillRect(rect,0);
+			
 			for each(var s2D:RxSprite in _displayList)
 			{
+				_tree.moveProxy(s2D.proxyId);
+				 
+				
+				//_debugNode = _tree.getNodeContaining(s2D.proxyId);
+				//_debugNode = s2D.proxy.node;
+			//	_debugCanvas.graphics.drawRect(_debugNode.xmin,_debugNode.ymin,_debugNode.xmax - _debugNode.xmin, _debugNode.ymax - _debugNode.ymin);
+				
 				sX = s2D.rixel::renderX;
 				sY = s2D.rixel::renderY;
 				sWidth = s2D.width;
 				sHeight = s2D.height;
 				point.x = sX;
 				point.y = sY;
-			
-
+		
 				//these conditionals perform screen clipping. So if an object has part that is off the stage, those pixels aren't drawn internally
 				//it's more efficient to keep this code in the loop rather then abstract it to a static class, even though it makes this code
 				//a bit more cluttered.
@@ -172,7 +192,7 @@ package org.rixel.Core.main
 				rect.width = sWidth + rectXOffset - rectWidthOffset;
 				rect.height = sHeight + rectYOffset - rectHeightOffset;
 				
-				_bitmapBuffer.copyPixels(s2D.rixel::frame,rect, point);
+				_bitmapBuffer.copyPixels(s2D.rixel::frame,rect, point,null,null,true);
 			}
 			
 			_bitmapBuffer.unlock();
@@ -189,41 +209,21 @@ package org.rixel.Core.main
 			}
 		}
 		
-		public function addChild2D(child:RxSprite):RxSprite
+		public function rxAddChild(child:RxSprite):RxSprite
 		{
+			child.proxyId = _tree.createProxy(child);
 			_displayList.push(child);
 			
 			return child;
 		}
 		
-		public function addChildAt2D(child:RxSprite, index:int):RxSprite
+		/*public function rxAddChildAt(child:RxSprite, index:int):RxSprite
 		{
-			
 			return child;
-		}
+		}*/
 		
 		////////////////////GETTERS SETTERS////////////////
-		
-		public function set showRedrawFrames(value:Boolean):void
-		{
-			if(value)
-			{
-				_debugCanvas = new Sprite();
-				this.addChild(_debugCanvas);
-			}else{
-				this.removeChild(_debugCanvas);
-				_debugCanvas = null;
-				
-			}
-			
-			_debugMode = value;
-		}
-		
-		public function set useDirtyRectangles(value:Boolean):void
-		{
-			_dirtyRectangles = value;
-		}
-		
+
 		
 		////////////////////STATICS////////////////////////
 		public static function init():void
