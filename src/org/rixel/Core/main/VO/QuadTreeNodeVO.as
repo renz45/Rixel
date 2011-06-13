@@ -1,6 +1,6 @@
 package org.rixel.Core.main.VO
 {
-	import org.rixel.Core.main.QuadTreeNode;
+	import org.rixel.oldUnusedForReference.QuadTreeNode;
 
 	public class QuadTreeNodeVO
 	{
