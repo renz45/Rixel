@@ -4,9 +4,6 @@ package org.rixel.Core.displayObjects
 	import flash.display.Sprite;
 	
 	import org.osflash.signals.Signal;
-	import org.rixel.Core.main.QuadTree;
-	import org.rixel.Core.main.QuadTreeNode;
-	import org.rixel.Core.main.QuadTreeProxy;
 	import org.rixel.Core.nameSpaces.rixel;
 	import org.rixel.Core.quadTree.RxQuadTreeProxy;
 

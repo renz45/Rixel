@@ -7,10 +7,6 @@ package org.rixel.Core.displayObjects
 	import flash.geom.Rectangle;
 	import flash.utils.flash_proxy;
 	
-	import mx.charts.chartClasses.InstanceCache;
-	import mx.core.MovieClipAsset;
-	import mx.core.mx_internal;
-	
 	import org.osflash.signals.Signal;
 	import org.rixel.Core.collision.RxCollision;
 	import org.rixel.Core.displayObjects.VO.Sprite_VO;
@@ -287,7 +283,7 @@ package org.rixel.Core.displayObjects
 		
 		override rixel function get renderY():int
 		{
-			return _y - _yOffsetMin;
+			return _y - _yOffsetMin; 
 		}
 		
 		//engine specific function used by the Stage2D to render the image.
