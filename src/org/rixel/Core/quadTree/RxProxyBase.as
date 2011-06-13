@@ -1,15 +1,17 @@
 package org.rixel.Core.quadTree
 {	
-	import org.rixel.Core.displayObjects.RxDisplayObject;
+	/*
+	Based on the quadtree used in the open source Motor physics engine by Michael Baczynski:
+	http://code.google.com/p/polygonal/downloads/list?can=4&q=&colspec=Filename+Summary+Uploaded+Size+DownloadCount
+	*/
+	import org.rixel.Core.displayObjects.RxSprite;
 
 	public class RxProxyBase
 	{
 		public static const NULL_PROXY:int = 0xffff;
 		
 		public var id:int;
-		//public var shape:ShapeSkeleton;
-		public var displayObject:RxDisplayObject;
-		public var overlapCount:int;
+		public var sprite:RxSprite;
 		
 		private var _next:int;
 		
@@ -30,9 +32,7 @@ package org.rixel.Core.quadTree
 		
 		public function reset():void
 		{
-			overlapCount = 0;
-			displayObject = null;
-			//shape = null;
+			sprite = null;
 		}
 	}
 }

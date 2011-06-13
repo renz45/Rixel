@@ -1,5 +1,12 @@
 package org.rixel.Core.quadTree 
 {
+	import flash.display.BitmapData;
+
+	/*
+	Based on the quadtree used in the open source Motor physics engine by Michael Baczynski:
+	http://code.google.com/p/polygonal/downloads/list?can=4&q=&colspec=Filename+Summary+Uploaded+Size+DownloadCount
+	*/
+	
 	public class RxQuadTreeProxy extends RxProxyBase
 	{
 		public var nextInNode:RxQuadTreeProxy;
@@ -15,7 +22,7 @@ package org.rixel.Core.quadTree
 		
 		public function RxQuadTreeProxy()
 		{
-			
+			var b:BitmapData = new BitmapData(1,1);
 		}
 		
 		public function remove():void

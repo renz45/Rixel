@@ -21,6 +21,7 @@ package org.rixel.Core.quadTree
 			if (proxyList) proxyList.prevInNode = proxy;
 			proxyList = proxy;
 			proxy.node = this;
+			
 		}
 	}
 }

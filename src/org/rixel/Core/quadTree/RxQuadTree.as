@@ -1,12 +1,16 @@
 package org.rixel.Core.quadTree
 {	
+	/*
+	Based on the quadtree used in the open source Motor physics engine by Michael Baczynski:
+	http://code.google.com/p/polygonal/downloads/list?can=4&q=&colspec=Filename+Summary+Uploaded+Size+DownloadCount
+	*/
+	
 	import flash.system.System;
 	
 	import org.rixel.Core.Geometry.RxRectangle;
 	import org.rixel.Core.displayObjects.RxDisplayObject;
-	import org.rixel.Core.quadTree.AABB2;
-	import org.rixel.Core.quadTree.Circle2;
-	//import org.rixel.Core.quadTree.Constants;
+	import org.rixel.Core.displayObjects.RxSprite;
+	import org.rixel.Core.nameSpaces.rixel;
 	
 	public class RxQuadTree
 	{
@@ -31,6 +35,37 @@ package org.rixel.Core.quadTree
 		private var _proxyCount:int;
 		
 		private var _objectMax:int;
+		
+		/////////////function optimizations
+		private var _proxy:RxQuadTreeProxy;
+		private var _s:RxSprite;
+		
+		private var _x1:int;
+		private var _y1:int;
+		
+		private var _xl:int;
+		private var _yt:int;
+		
+		private var _xr:int;
+		private var _yr:int;
+		
+		private var _shift:int;
+		private var _node:RxQuadTreeNode;
+		
+		private var _level:int;
+		
+		private var _x0:int;
+		private var _y0:int;
+		
+		private var _xmin2:Number, _xmax2:Number;
+		private var _ymin2:Number, _ymax2:Number;
+		
+		private var _p:RxQuadTreeProxy;
+		
+		private var _i:int;
+		
+		private var _proxyId:int;
+		
 		
 		public static const MAX_512_OBJECTS:int = 512;
 		public static const MAX_1024_OBJECTS:int = 1024;
@@ -70,21 +105,17 @@ package org.rixel.Core.quadTree
 				p1 = p1.nextInTree;
 				p0.nextInTree = null;
 				p0.prevInTree = null;
-				//p0.shape = null;
-				p0.displayObject;
+				p0.sprite;
 			}
 			
 			_proxyList = null;
 			_proxyPool = null;
-			
-			//_pairManager = null;
 		}
 		
-		//public function setWorldBounds(aabb:AABB2):void
-		public function setWorldBounds(aabb:RxRectangle):void
+		public function setWorldBounds(rect:RxRectangle):void
 		{
-			_xmin = aabb.xmin; _ymin = aabb.ymin;
-			_xmax = aabb.xmax; _ymax = aabb.ymax;
+			_xmin = rect.xmin; _ymin = rect.ymin;
+			_xmax = rect.xmax; _ymax = rect.ymax;
 			
 			var w:int = _xmax - _xmin;
 			var h:int = _ymax - _ymin;
@@ -104,71 +135,85 @@ package org.rixel.Core.quadTree
 			return true;
 		}
 		
-		public function queryAABB(aabb:RxRectangle, out:Vector.<RxDisplayObject>, maxCount:int = int.MAX_VALUE):int
+		public function queryRectangle(rect:RxRectangle, out:Vector.<RxSprite>, maxCount:int = int.MAX_VALUE):int
 		{
-			if (out.fixed) maxCount = out.length;
-			
-			var xmin:Number = aabb.xmin;
-			var xmax:Number = aabb.xmax;
-			var ymin:Number = aabb.ymin;
-			var ymax:Number = aabb.ymax;
-			
-			var p:RxQuadTreeProxy = _proxyList;
-			var s:RxDisplayObject;
-			
-			var i:int = 0;
-			while (p != null)
+			if (out.fixed)
 			{
-				s = p.displayObject;
-				if (s.xmin > xmax || s.xmax < xmin || s.ymin > ymax || s.ymax < ymin)
+				maxCount = out.length;
+			}
+			
+			_xmin2 = rect.xmin;
+			_xmax2 = rect.xmax;
+			_ymin2 = rect.ymin;
+			_ymax2 = rect.ymax;
+			
+			_p = _proxyList;
+			
+			_i = 0;
+			while (_p != null)
+			{
+				_s = _p.sprite;
+				if (_s.xmin > _xmax2 || _s.xmax < _xmin2 || _s.ymin > _ymax2 || _s.ymax < _ymin2)
 				{
-					p = p.nextInTree;
+					_p = _p.nextInTree;
 					continue;
 				}
 				
-				out[i++] = s;
-				if (i == maxCount)
-					break;
+				out[_i++] = _s;
 				
-				p = p.nextInTree;
+				if (_i == maxCount)
+				{
+					break;
+				}
+				
+				_p = _p.nextInTree;
 			}
 			
-			return i;
+			return _i;
 		}
 		
-		public function createProxy(displayObject:RxDisplayObject):int
+		public function createProxy(sprite:RxSprite):int
 		{
-			var proxyId:int = _freeProxy;
-			var proxy:RxQuadTreeProxy = _proxyPool[proxyId];
-			_freeProxy = proxy.getNext();
-			proxy.displayObject = displayObject;
+			_proxyId = _freeProxy;
+			_proxy = _proxyPool[_proxyId];
+			_freeProxy = _proxy.getNext();
 			
-			proxy.nextInTree = _proxyList;
-			if (_proxyList) _proxyList.prevInTree = proxy;
-			_proxyList = proxy;
+			_proxy.sprite = sprite;
+			sprite.proxy = _proxy;
 			
-			proxy.xl1 = int.MIN_VALUE;
-			proxy.yl1 = int.MIN_VALUE;
-			proxy.xl2 = int.MIN_VALUE;
-			proxy.yl2 = int.MIN_VALUE;
-			proxy.displayObject = displayObject;
+			_proxy.nextInTree = _proxyList;
+			if (_proxyList)
+			{
+				_proxyList.prevInTree = _proxy;
+			}
+			_proxyList = _proxy;
 			
-			getNodeContaining(proxy.id).insert(proxy);
+			_proxy.xl1 = int.MIN_VALUE;
+			_proxy.yl1 = int.MIN_VALUE;
+			_proxy.xl2 = int.MIN_VALUE;
+			_proxy.yl2 = int.MIN_VALUE;
+			
+			_proxy.sprite = sprite;
+			
+			getNodeContaining(_proxy.id).insert(_proxy);
 			
 			_proxyCount++;
 			
-			return proxyId;
+			return _proxyId;
 		}
 		
 		public function destroyProxy(proxyId:int):void
 		{
-			if (proxyId == RxProxyBase.NULL_PROXY) return;
+			if(proxyId == RxProxyBase.NULL_PROXY)
+			{
+				return;
+			}
 			
 			var p1:RxQuadTreeProxy = _proxyPool[proxyId];
 			var p2:RxQuadTreeProxy;
 			
-			var s1:RxDisplayObject = p1.displayObject;
-			var s2:RxDisplayObject;
+			var s1:RxSprite = p1.sprite;
+			var s2:RxSprite;
 			
 			var xmin:Number = s1.xmin, xmax:Number = s1.xmax;
 			var ymin:Number = s1.ymin, ymax:Number = s1.ymax;
@@ -182,7 +227,7 @@ package org.rixel.Core.quadTree
 					continue;
 				}
 				
-				s2 = p2.displayObject;
+				s2 = p2.sprite;
 				if (xmin > s2.xmax || xmax < s2.xmin || ymin > s2.ymax || ymax < s2.ymin)
 				{
 					p2 = p2.nextInTree;
@@ -196,9 +241,20 @@ package org.rixel.Core.quadTree
 			p1.remove();
 			
 			//unlink from list
-			if (p1.prevInTree) p1.prevInTree.nextInTree = p1.nextInTree;
-			if (p1.nextInTree) p1.nextInTree.prevInTree = p1.prevInTree;
-			if (p1 == _proxyList) _proxyList = p1.nextInTree;
+			if(p1.prevInTree) 
+			{
+				p1.prevInTree.nextInTree = p1.nextInTree;
+			}
+			
+			if(p1.nextInTree)
+			{
+				p1.nextInTree.prevInTree = p1.prevInTree;
+			}
+			
+			if(p1 == _proxyList)
+			{
+				_proxyList = p1.nextInTree;
+			}
 			
 			//recycle & reset
 			p1.setNext(_freeProxy);
@@ -210,104 +266,108 @@ package org.rixel.Core.quadTree
 		
 		public function moveProxy(proxyId:int):void
 		{
-			var proxy:RxQuadTreeProxy = _proxyPool[proxyId];
-			var s:RxDisplayObject = proxy.displayObject;
+			_proxy = _proxyPool[proxyId];
+			_s = _proxy.sprite;
 			
 			//early out by comparing integer positions
-			var x1:int = s.xmin;
-			var y1:int = s.ymin;
+			_x1 = _s.xmin;
+			_y1 = _s.ymin;
 			
-			if (proxy.xl1 == x1 && proxy.yl1 == y1)
-				return;
-			
-			proxy.xl1 = x1;
-			proxy.yl1 = y1;
-			
-			var xl:int = (s.xmin + _xOffset) * _xScale;
-			var yt:int = (s.ymin + _yOffset) * _yScale;
-			
-			//compute new quad tree position
-			var xr:int = xl ^ int((s.xmax + _xOffset) * _xScale);
-			var yr:int = yt ^ int((s.ymax + _yOffset) * _yScale);
-			
-			var level:int = _depth;
-			while (xr + yr != 0)
+			if (_proxy.xl1 == _x1 && _proxy.yl1 == _y1)
 			{
-				xr >>= 1;
-				yr >>= 1;
-				level--;
+				return;
 			}
 			
-			var shift:int = _depth - level;
-			xl >>= shift;
-			yt >>= shift;
+			_proxy.xl1 = _x1;
+			_proxy.yl1 = _y1;
+			
+			_xl = (_s.xmin + _xOffset) * _xScale;
+			_yt = (_s.ymin + _yOffset) * _yScale;
+			
+			//compute new quad tree position
+			_xr = _xl ^ int((_s.xmax + _xOffset) * _xScale);
+			_yr = _yt ^ int((_s.ymax + _yOffset) * _yScale);
+			
+			_level = _depth;
+			while (_xr + _yr != 0)
+			{
+				_xr >>= 1;
+				_yr >>= 1;
+				_level--;
+			}
+			
+			_shift = _depth - _level;
+			_xl >>= _shift;
+			_yt >>= _shift;
 			
 			//early out by comparing node position
-			if (xl == proxy.xl2 && yt == proxy.yl2)
+			if (_xl == _proxy.xl2 && _yt == _proxy.yl2)
+			{
 				return;
+			}
 			
-			proxy.xl2 = xl;
-			proxy.yl2 = yt;
+			_proxy.xl2 = _xl;
+			_proxy.yl2 = _yt;
 			
-			proxy.remove();
+			_proxy.remove();
 			
-			var node:RxQuadTreeNode = proxy.node = _nodes[int(_offsets[level] + (yt << (level - 1)) + xl)];
-			node.insert(proxy);
+			_node = _proxy.node = _nodes[int(_offsets[_level] + (_yt << (_level - 1)) + _xl)];
+			_node.insert(_proxy);
 		}
 		
 		public function getNodeLevel(proxy:RxQuadTreeProxy):int
 		{
-			var s:RxDisplayObject = proxy.displayObject;
+			_s = proxy.sprite;
 			
 			//XOR together the start and end positions on each axis
-			var xr:int = int(s.xmin * _xScale + _xOffset) ^ int(s.xmax * _xScale + _xOffset);
-			var yr:int = int(s.ymin * _yScale + _yOffset) ^ int(s.ymax * _yScale + _yOffset);
+			_xr = int(_s.xmin * _xScale + _xOffset) ^ int(_s.xmax * _xScale + _xOffset);
+			_yr = int(_s.ymin * _yScale + _yOffset) ^ int(_s.ymax * _yScale + _yOffset);
 			
 			//Each bit in the result indicates that the range volume crosses
 			//a point at the corresponding power of 2. The bit position of the
 			//highest 1 bit indicates how many levels above the bottom of the
 			//quadtree the range can first be properly placed.
-			var level:int = _depth;
+			_level = _depth;
 			
 			//count highest bit position
 			//to get number of tree levels - bit position */
-			while (xr + yr != 0)
+			while (_xr + _yr != 0)
 			{
-				xr >>= 1;
-				yr >>= 1;
-				level--;
+				_xr >>= 1;
+				_yr >>= 1;
+				_level--;
 			}
 			
-			return level;
+			return _level;
 		}
 		
 		public function getNodeContaining(proxyId:int):RxQuadTreeNode
 		{
-			var proxy:RxQuadTreeProxy = _proxyPool[proxyId];
-			var s:RxDisplayObject = proxy.displayObject;
+			_proxy = _proxyPool[proxyId];
+			_s = _proxy.sprite;
 			
-			var x0:int = (s.xmin + _xOffset) * _xScale;
-			var y0:int = (s.ymin + _yOffset) * _yScale;
-			var x1:int = (s.xmax + _xOffset) * _xScale;
-			var y1:int = (s.ymax + _yOffset) * _yScale;
+			_x0 = (_s.xmin + _xOffset) * _xScale;
+			_y0 = (_s.ymin + _yOffset) * _yScale;
+			_x1 = (_s.xmax + _xOffset) * _xScale;
+			_y1 = (_s.ymax + _yOffset) * _yScale;
 			
-			var xr:int = x0 ^ x1;
-			var yr:int = y0 ^ y1;
+			_xr = _x0 ^ _x1;
+			_yr = _y0 ^ _y1;
 			
-			var level:int = _depth;
-			while (xr + yr != 0)
+			_level = _depth;
+			while (_xr + _yr != 0)
 			{
-				xr >>= 1;
-				yr >>= 1;
-				level--;
+				_xr >>= 1;
+				_yr >>= 1;
+				_level--;
 			}
 			
 			//lookup node pointer in a 2D vector stored linearly,
 			//scale coordinates for quadtree level
-			var shift:int = _depth - level;
-			x0 >>= shift;
-			y0 >>= shift;
-			return _nodes[int(_offsets[level] + (y0 << (level - 1)) + x0)];
+			_shift = _depth - _level;
+			_x0 >>= _shift;
+			_y0 >>= _shift;
+			return _nodes[int(_offsets[_level] + (_y0 << (_level - 1)) + _x0)];
 		}
 		
 		public function getProxy(proxyId:int):RxProxyBase
@@ -329,6 +389,7 @@ package org.rixel.Core.quadTree
 			return list;
 		}
 		
+		
 		private function initialize(width:int, height:int):void
 		{
 			var memory:uint = System.totalMemory;
@@ -343,8 +404,13 @@ package org.rixel.Core.quadTree
 			_xScale = treeSize / width;
 			_yScale = treeSize / height;
 			
-			for (i = 0, offset = -1; i < _depth; i++) offset += (1 << (i << 1));
+			for (i = 0, offset = -1; i < _depth; i++)
+			{
+				offset += (1 << (i << 1));
+			}
+			
 			i = offset + 1;
+			
 			_nodes = new Vector.<RxQuadTreeNode>(i, true);
 			_offsets = new Vector.<int>(_depth + 1, true);
 			_offsets[0] = -1;
@@ -385,16 +451,19 @@ package org.rixel.Core.quadTree
 				parentOffset  = _offsets[int(i - 1)];
 				
 				for (y = 0; y < levelEdgeSize; y++)
+				{
 					for (x = 0; x < levelEdgeSize; x++)
+					{
 						_nodes[int(offset + y * levelEdgeSize + x)].parent =
 							_nodes[int(parentOffset + (y >> 1) * (levelEdgeSize >> 1) + (x >> 1))];
+					}
+				}
 			}
 			
 			//initialize proxy pool
-			var maxProxies:int = Constants.k_maxProxies;
 			var proxy:RxQuadTreeProxy;
-			_proxyPool = new Vector.<RxQuadTreeProxy>(maxProxies, true);
-			for (i = 0; i < maxProxies - 1; i++)
+			_proxyPool = new Vector.<RxQuadTreeProxy>(_objectMax, true);
+			for (i = 0; i < _objectMax - 1; i++)
 			{
 				proxy = new RxQuadTreeProxy();
 				proxy.id = i;
@@ -404,8 +473,8 @@ package org.rixel.Core.quadTree
 			
 			proxy = new RxQuadTreeProxy();
 			proxy.setNext(RxProxyBase.NULL_PROXY);
-			proxy.id = maxProxies - i;
-			_proxyPool[maxProxies - 1] = proxy;
+			proxy.id = _objectMax - i;
+			_proxyPool[_objectMax - 1] = proxy;
 			
 			_freeProxy = 0;
 			
@@ -417,7 +486,7 @@ package org.rixel.Core.quadTree
 			trace(" * quad node y-scale  = " + _yScale.toFixed(3));
 			trace(" * root node size = " + width + "x" + height + "px");
 			trace(" * leaf node size = " + (1 / _xScale).toFixed(3) + "x" + (1 / _yScale).toFixed(3) + "px");
-			trace(" * max proxies = " + maxProxies);
+			trace(" * max proxies = " + _objectMax);
 			trace(" * memory = " + ((System.totalMemory - memory) >> 10) + " KiB");
 			trace(" ////////////////////////////////////////////////////////*/");
 			trace("");
