@@ -12,7 +12,7 @@ package org.rixel.Core.displayObjects
 	import mx.core.mx_internal;
 	
 	import org.osflash.signals.Signal;
-	import org.osmf.layout.AbsoluteLayoutFacet;
+	import org.rixel.Core.collision.RxCollision;
 	import org.rixel.Core.displayObjects.VO.Sprite_VO;
 	import org.rixel.Core.nameSpaces.rixel;
 	
@@ -45,6 +45,8 @@ package org.rixel.Core.displayObjects
 			_playDirection = 1;
 			_isPlaying = true;
 			_dirty = true;
+			
+			_collisionManager = new RxCollision(this);
 			
 			//create a boolean which tests of our static object has a name in its list that matches the given class
 			var objectExists:Boolean = _displayObjectList.hasOwnProperty(_className);
@@ -278,19 +280,21 @@ package org.rixel.Core.displayObjects
 		
 		//these render values will account for the offset of the movieclip. So if a registration point was in the center the position will be the same
 		//the function is a engine specific function since users don't need to see these values.
-		override rixel function get renderX():Number
+		override rixel function get renderX():int
 		{
 			return _x - _xOffsetMin;
 		}
 		
-		override rixel function get renderY():Number
+		override rixel function get renderY():int
 		{
 			return _y - _yOffsetMin;
 		}
 		
 		//engine specific function used by the Stage2D to render the image.
-		override rixel function get frame():BitmapData
+		override rixel function get frame():BitmapData 
 		{
+			_collisionManager.update();
+			
 			if(_dataLoaded)
 			{
 				
@@ -317,6 +321,15 @@ package org.rixel.Core.displayObjects
 			}
 		}
 		
+		override rixel function get collisionFrame():BitmapData
+		{
+			if(_dataLoaded)
+			{
+				return _imageDataFrames[_currentFrame];
+			}else{
+				return _placeHolderData;
+			}
+		}
 		/////////////////////statics///////////////////
 		
 	}

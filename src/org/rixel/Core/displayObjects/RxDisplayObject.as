@@ -8,13 +8,14 @@ package org.rixel.Core.displayObjects
 	import org.rixel.Core.main.QuadTreeNode;
 	import org.rixel.Core.main.QuadTreeProxy;
 	import org.rixel.Core.nameSpaces.rixel;
+	import org.rixel.Core.quadTree.RxQuadTreeProxy;
 
 	use namespace rixel;
 	
 	public class RxDisplayObject
 	{ 
-		protected var _x:Number;
-		protected var _y:Number;
+		protected var _x:int;
+		protected var _y:int;
 		protected var _width:Number;
 		protected var _height:Number;
 		protected var _alpha:Number;
@@ -26,13 +27,13 @@ package org.rixel.Core.displayObjects
 		protected var _dataLoaded:Boolean;
 		protected var _params:Object;
 		
-		public var _proxy:QuadTreeProxy;
+		
 		
 		public var Event_MovieclipLoaded:Signal;
 		public var Event_IsDirty:Signal;
 		
 		/////////////////new quadtree
-		public var proxyId:int;
+		
 		/////////////////
 		
 		
@@ -171,7 +172,6 @@ package org.rixel.Core.displayObjects
 			return _y + _height;
 		}
 		
-		
 		/////////////////////INTERNAL RIXEL METHODS//////////////////
 		rixel function get frame():BitmapData
 		{
@@ -183,15 +183,7 @@ package org.rixel.Core.displayObjects
 			}
 		}
 		
-		rixel function get proxy():QuadTreeProxy
-		{
-			return _proxy;
-		}
 		
-		rixel function set proxy(node:QuadTreeProxy):void
-		{
-			_proxy = node;
-		}
 		
 	}
 }
