@@ -5,6 +5,7 @@ package org.rixel.Core.displayObjects
 	
 	import org.osflash.signals.Signal;
 	import org.rixel.Core.nameSpaces.rixel;
+	import org.rixel.Core.quadTree.IRxProxy;
 	import org.rixel.Core.quadTree.RxQuadTreeProxy;
 
 	use namespace rixel;
@@ -13,8 +14,8 @@ package org.rixel.Core.displayObjects
 	{ 
 		protected var _x:int;
 		protected var _y:int;
-		protected var _width:Number;
-		protected var _height:Number;
+		protected var _width:int;
+		protected var _height:int;
 		protected var _alpha:Number;
 		protected var _transparent:Boolean;
 		protected var _fillColor:uint;
@@ -113,24 +114,24 @@ package org.rixel.Core.displayObjects
 			Event_IsDirty.dispatch(this);
 		}
 		
-		public function get width():Number
+		public function get width():int
 		{
 			return _width;
 		}
 		
-		public function set width(value:Number):void
+		public function set width(value:int):void
 		{
 			_width = value;
 			_dirty = true;
 			Event_IsDirty.dispatch(this);
 		}
 		
-		public function get height():Number
+		public function get height():int
 		{
 			return _height;
 		}
 		
-		public function set height(value:Number):void
+		public function set height(value:int):void
 		{
 			_height = value;
 			_dirty = true;
@@ -149,28 +150,28 @@ package org.rixel.Core.displayObjects
 			Event_IsDirty.dispatch(this);
 		}
 		
-		public function get xmin():Number
+		public function get xmin():int
 		{
 			return _x;
 		}
 		
-		public function get xmax():Number
+		public function get xmax():int
 		{
 			return _x + _width;
 		}
 		
-		public function get ymin():Number
+		public function get ymin():int
 		{
 			return _y;
 		}
 		
-		public function get ymax():Number
+		public function get ymax():int
 		{
 			return _y + _height;
 		}
 		
 		/////////////////////INTERNAL RIXEL METHODS//////////////////
-		rixel function get frame():BitmapData
+		public function get frame():BitmapData
 		{
 			if(_imageData)
 			{

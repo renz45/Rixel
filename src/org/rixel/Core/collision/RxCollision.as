@@ -14,7 +14,7 @@ package org.rixel.Core.collision
 	
 	public class RxCollision
 	{
-		private var _sprite:RxSprite;
+		private var _sprite:ICollision;
 		private var _p1:Point;
 		private var _p2:Point;
 		private var _bmd:BitmapData;
@@ -87,7 +87,7 @@ package org.rixel.Core.collision
 			_p2.x = x2;
 			_p2.y = y2;
 			
-			if(_sprite.rixel::collisionFrame.hitTest(_p1,255,rxSprite.rixel::collisionFrame,_p2) )
+			if(_sprite.collisionFrame.hitTest(_p1,255,rxSprite.collisionFrame,_p2) )
 			{
 				return true;
 			}else{
@@ -212,33 +212,33 @@ package org.rixel.Core.collision
 						switch(_collisionType)
 						{
 							case "pixelPerfect":
-								if(pixelPerfect(_sprite.rixel::renderX,_sprite.rixel::renderY,_testproxy.sprite,_testproxy.sprite.rixel::renderX,_testproxy.sprite.rixel::renderY))
+								if(pixelPerfect(_sprite.boundsX,_sprite.boundsY,_testproxy.proxyObject,_testproxy.proxyObject.boundsX,_testproxy.proxyObject.boundsY))
 								{
-									Event_collision.dispatch(_sprite,_testproxy.sprite);
+									Event_collision.dispatch(_sprite,_testproxy.proxyObject);
 								}
 								break
 							case "distanceRadiusWidth":
-								if(distanceRadiusBasedWidth(_sprite.rixel::renderX,_sprite.rixel::renderY,_testproxy.sprite,_testproxy.sprite.rixel::renderX,_testproxy.sprite.rixel::renderY))
+								if(distanceRadiusBasedWidth(_sprite.boundsX,_sprite.boundsY,_testproxy.proxyObject,_testproxy.proxyObject.boundsX,_testproxy.proxyObject.boundsY))
 								{
-									Event_collision.dispatch(_sprite,_testproxy.sprite);
+									Event_collision.dispatch(_sprite,_testproxy.proxyObject);
 								}
 								break;
 							case "distanceRadiusHeight":
-								if(distanceRadiusBasedHeight(_sprite.rixel::renderX,_sprite.rixel::renderY,_testproxy.sprite,_testproxy.sprite.rixel::renderX,_testproxy.sprite.rixel::renderY))
+								if(distanceRadiusBasedHeight(_sprite.boundsX,_sprite.boundsY,_testproxy.proxyObject,_testproxy.proxyObject.boundsX,_testproxy.proxyObject.boundsY))
 								{
-									Event_collision.dispatch(_sprite,_testproxy.sprite);
+									Event_collision.dispatch(_sprite,_testproxy.proxyObject);
 								}
 								break;
 							case "boundingBox":
-								if(boundingBoxBased(_sprite.rixel::renderX,_sprite.rixel::renderY,_testproxy.sprite,_testproxy.sprite.rixel::renderX,_testproxy.sprite.rixel::renderY))
+								if(boundingBoxBased(_sprite.boundsX,_sprite.boundsY,_testproxy.proxyObject,_testproxy.proxyObject.boundsX,_testproxy.proxyObject.boundsY))
 								{
-									Event_collision.dispatch(_sprite,_testproxy.sprite);
+									Event_collision.dispatch(_sprite,_testproxy.proxyObject);
 								}
 								break;
 							case "boundingCircle":
-								if(boundingCircleBased(_sprite.rixel::renderX,_sprite.rixel::renderY,_testproxy.sprite,_testproxy.sprite.rixel::renderX,_testproxy.sprite.rixel::renderY))
+								if(boundingCircleBased(_sprite.boundsX,_sprite.boundsY,_testproxy.proxyObject,_testproxy.proxyObject.boundsX,_testproxy.proxyObject.boundsY))
 								{
-									Event_collision.dispatch(_sprite,_testproxy.sprite);
+									Event_collision.dispatch(_sprite,_testproxy.proxyObject);
 								}
 								break;
 						}
@@ -256,7 +256,7 @@ package org.rixel.Core.collision
 					return pixelPerfect(x1,y1,rxSprite,x2,y2);
 					break
 				case "distanceRadiusWidth":
-					return distanceRadiusBasedWidth(x1,y1,_testproxy.sprite,x2,y2);
+					return distanceRadiusBasedWidth(x1,y1,_testproxy.proxyObject,x2,y2);
 					break;
 				case "distanceRadiusHeight":
 					return distanceRadiusBasedHeight(x1,y1,rxSprite,x2,y2)

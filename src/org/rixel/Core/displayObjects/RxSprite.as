@@ -5,14 +5,17 @@ package org.rixel.Core.displayObjects
 	import flash.display.Sprite;
 	
 	import org.osflash.signals.Signal;
+	import org.rixel.Core.collision.ICollision;
 	import org.rixel.Core.collision.RxCollision;
 	import org.rixel.Core.displayObjects.VO.Sprite_VO;
+	import org.rixel.Core.main.IBitmapRender;
 	import org.rixel.Core.nameSpaces.rixel;
+	import org.rixel.Core.quadTree.IRxProxy;
 	import org.rixel.Core.quadTree.RxQuadTreeProxy;
 	
 	use namespace rixel;
 
-	public class RxSprite extends RxDisplayObject
+	public class RxSprite extends RxDisplayObject implements IBitmapRender, ICollision, IRxProxy
 	{	
 		
 		protected var _className:String;
@@ -27,9 +30,10 @@ package org.rixel.Core.displayObjects
 		
 		///////quadtree
 		private var _proxy:RxQuadTreeProxy;
-		public var proxyId:int;
+		private var _proxyId:int;
 		
-		
+		//////Events
+		public var Event_MouseOver:Signal;
 		
 		public function RxSprite(sprite:Class, params:Object = null)
 		{
@@ -39,6 +43,7 @@ package org.rixel.Core.displayObjects
 			_className = (sprite as Class).toString();
 			
 			init(); 
+			initEvents();
 		}
 		
 		protected function init():void
@@ -65,8 +70,15 @@ package org.rixel.Core.displayObjects
 				
 				_displayObjectList[_className] = vo;
 				
-				convertSprite(newClass);
+				convertSprite(newClass); 
 			}
+			
+			
+		}
+		
+		private function initEvents():void
+		{
+			Event_MouseOver = new Signal()
 		}
 		
 		private function convertSprite(sprite:Sprite):void
@@ -85,7 +97,7 @@ package org.rixel.Core.displayObjects
 		public function get collision():RxCollision
 		{
 			return _collisionManager;
-		}
+		} 
 		
 		
 		////////////////////GETTERS SETTERS////////////////
@@ -109,22 +121,34 @@ package org.rixel.Core.displayObjects
 			_proxy = node;
 		}
 		
+		public function get proxyId():int
+		{
+			return _proxyId;
+		}
+		
+		public function set proxyId(value:int):void
+		{
+			_proxyId = value;
+		}
+		
 		//////////////////engine specific/////////////
 		
 		//these render values will account for the offset of the movieclip. So if a registration point was in the center the position will be the same
 		//the function is a engine specific function since users don't need to see these values.
-		rixel function get renderX():int
+		public function get boundsX():int
 		{
 			return _x;
 		}
 		
-		rixel function get renderY():int
+		public function get boundsY():int
 		{
 			return _y;
 		}
 		
+	
+		
 		//engine specific function used by the Stage2D to render the image.
-		override rixel function get frame():BitmapData 
+		override public function get frame():BitmapData 
 		{
 			_collisionManager.update();
 			
@@ -137,7 +161,7 @@ package org.rixel.Core.displayObjects
 		}
 		
 		//used for bitmap data collision so the frame doesn't get advanced to the next frame
-		rixel function get collisionFrame():BitmapData
+		public function get collisionFrame():BitmapData
 		{
 			if(_frameData)
 			{
@@ -147,7 +171,7 @@ package org.rixel.Core.displayObjects
 			}
 		}
 
-		rixel function get dirty():Boolean
+		/*rixel function get dirty():Boolean
 		{
 			return _dirty;
 		}
@@ -159,6 +183,11 @@ package org.rixel.Core.displayObjects
 			{
 				Event_IsDirty.dispatch(this);
 			}
+		}*/
+		
+		rixel function triggerMouseOver():void
+		{
+			
 		}
 		
 		///////////////////STATICS////////////////////////

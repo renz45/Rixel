@@ -21,7 +21,6 @@ package org.rixel.Core.main
 	import org.rixel.Core.quadTree.RxQuadTreeProxy;
 	
 	import spark.components.mediaClasses.VolumeBar;
-	import org.rixel.oldUnusedForReference.RxStage_Old;
 	
 	use namespace rixel;
 	
@@ -59,6 +58,8 @@ package org.rixel.Core.main
 		
 		private var point:Point = new Point();
 		private var rect:Rectangle = new Rectangle();
+		
+		private static var _initialized:Boolean;
  
 		public static const GRAPHIC_RENDERER:String = "graphicRenderer";
 		public static const BLIT_RENDERER:String = "blitRenderer";
@@ -66,6 +67,11 @@ package org.rixel.Core.main
 		public function RxStage(width:Number,height:Number,padding:int = 200, bgColor:uint = 0xFFFFFF, smoothing:Boolean = false, renderMode:String = RxStage.BLIT_RENDERER)
 		{
 			super();
+			
+			if(!_initialized)
+			{
+				throw new Error("Initialize the RxStage by calling the static method init() --> RxStage.init()");
+			}
 			
 			_width = width;
 			_height = height;
@@ -90,7 +96,7 @@ package org.rixel.Core.main
 			_displayList = new Vector.<RxSprite>;
 			
 			//GPU rendering mode setup
-			if(_renderMode == RxStage_Old.BLIT_RENDERER)
+			if(_renderMode == RxStage.BLIT_RENDERER)
 			{
 				_bitmapBuffer = new BitmapData(_width,_height,true,_bgColor);
 				
@@ -110,10 +116,10 @@ package org.rixel.Core.main
 		{
 			switch(_renderMode)
 			{
-				case RxStage_Old.BLIT_RENDERER:
+				case RxStage.BLIT_RENDERER:
 					blitRenderer();
 					break;
-				case RxStage_Old.GRAPHIC_RENDERER:
+				case RxStage.GRAPHIC_RENDERER:
 					graphicRenderer();
 					break;
 			}
@@ -130,7 +136,7 @@ package org.rixel.Core.main
 			
 			_bitmapBuffer.lock();
 			
-			rect.x = 0;
+			rect.x = 0; 
 			rect.y = 0;
 			rect.width = _width;
 			rect.height = _height; 
@@ -140,7 +146,7 @@ package org.rixel.Core.main
 			//clear bitmap
 			_bitmapBuffer.fillRect(rect,0);
 			
-			for each(var s2D:RxSprite in _displayList)
+			for each(var s2D:IBitmapRender in _displayList)
 			{
 				_tree.moveProxy(s2D.proxyId);
 				 
@@ -149,10 +155,11 @@ package org.rixel.Core.main
 				//_debugNode = s2D.proxy.node;
 			//	_debugCanvas.graphics.drawRect(_debugNode.xmin,_debugNode.ymin,_debugNode.xmax - _debugNode.xmin, _debugNode.ymax - _debugNode.ymin);
 				
-				sX = s2D.rixel::renderX;
-				sY = s2D.rixel::renderY;
+				sX = s2D.boundsX;
+				sY = s2D.boundsY;
 				sWidth = s2D.width;
 				sHeight = s2D.height;
+				
 				point.x = sX;
 				point.y = sY;
 		
@@ -192,7 +199,10 @@ package org.rixel.Core.main
 				rect.width = sWidth + rectXOffset - rectWidthOffset;
 				rect.height = sHeight + rectYOffset - rectHeightOffset;
 				
-				_bitmapBuffer.copyPixels(s2D.rixel::frame,rect, point,null,null,true);
+				point.x = sX + rectXOffset;
+				point.y = sY + rectYOffset;
+				
+				_bitmapBuffer.copyPixels(s2D.frame,rect, point,null,null,true);
 			}
 			
 			_bitmapBuffer.unlock();
@@ -203,7 +213,7 @@ package org.rixel.Core.main
 			this.graphics.clear();
 			for each(var s2D:RxSprite in _displayList)
 			{
-				this.graphics.beginBitmapFill(s2D.rixel::frame,new Matrix(1,0,0,1,s2D.x,s2D.y),false,false);
+				this.graphics.beginBitmapFill(s2D.frame,new Matrix(1,0,0,1,s2D.x,s2D.y),false,false);
 				this.graphics.drawRect(s2D.x,s2D.y,s2D.width,s2D.height);
 				this.graphics.endFill();
 			}
@@ -229,6 +239,7 @@ package org.rixel.Core.main
 		public static function init():void
 		{
 			RxSprite.rixel::init();
+			_initialized = true;
 		}
 		
 	}

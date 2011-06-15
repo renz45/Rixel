@@ -11,7 +11,7 @@ package org.rixel.Core.quadTree
 		public static const NULL_PROXY:int = 0xffff;
 		
 		public var id:int;
-		public var sprite:RxSprite;
+		public var proxyObject:RxSprite;
 		
 		private var _next:int;
 		
@@ -32,7 +32,7 @@ package org.rixel.Core.quadTree
 		
 		public function reset():void
 		{
-			sprite = null;
+			proxyObject = null;
 		}
 	}
 }

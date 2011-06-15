@@ -21,11 +21,11 @@ package org.rixel.Core.displayObjects
 		private var _isPlaying:Boolean;
 		private var _playDirection:int;
 		
-		private var _xOffsetMin:Number;
-		private var _yOffsetMin:Number;
+		private var _xOffsetMin:int;
+		private var _yOffsetMin:int;
 		
-		private var _xOffsetMax:Number;
-		private var _yOffsetMax:Number;
+		private var _xOffsetMax:int;
+		private var _yOffsetMax:int;
 		
 		private var _imageDataFrames:Vector.<BitmapData>;
 		
@@ -138,8 +138,8 @@ package org.rixel.Core.displayObjects
 		//This solves the problem of a rotating object getting it's corners cut off during the rotation cycle, and movieclips that contain sliding animation
 		private function findMaxDimensions(mc:MovieClip):void
 		{
-			var maxWidth:Number = 0;
-			var maxHeight:Number = 0;
+			var maxWidth:int = 0;
+			var maxHeight:int = 0;
 			_xOffsetMin = 0;
 			_yOffsetMin = 0;
 			_xOffsetMax = 0;
@@ -161,7 +161,6 @@ package org.rixel.Core.displayObjects
 				{
 					maxHeight = rect.height;
 				}
-				
 				
 				if(rect.x < _xOffsetMin)
 				{
@@ -185,7 +184,7 @@ package org.rixel.Core.displayObjects
 			}
 			
 			
-			_xOffsetMin =	_xOffsetMin * -1;
+			_xOffsetMin =_xOffsetMin * -1;
 			_yOffsetMin = _yOffsetMin * -1;
 			
 			_xOffsetMax = Math.ceil(_xOffsetMax);
@@ -276,18 +275,18 @@ package org.rixel.Core.displayObjects
 		
 		//these render values will account for the offset of the movieclip. So if a registration point was in the center the position will be the same
 		//the function is a engine specific function since users don't need to see these values.
-		override rixel function get renderX():int
+		override public function get boundsX():int
 		{
 			return _x - _xOffsetMin;
 		}
 		
-		override rixel function get renderY():int
+		override public function get boundsY():int
 		{
 			return _y - _yOffsetMin; 
 		}
 		
 		//engine specific function used by the Stage2D to render the image.
-		override rixel function get frame():BitmapData 
+		override public function get frame():BitmapData 
 		{
 			_collisionManager.update();
 			
@@ -317,7 +316,7 @@ package org.rixel.Core.displayObjects
 			}
 		}
 		
-		override rixel function get collisionFrame():BitmapData
+		override public function get collisionFrame():BitmapData
 		{
 			if(_dataLoaded)
 			{
