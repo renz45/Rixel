@@ -49,7 +49,8 @@ package org.rixel.Core.collision
 		public var Event_collision:CollisionSignal;
 		
 		public static const TYPE_PIXEL_PERFECT:String = "pixelPerfect";
-		public static const TYPE_DISTANCE_RADIUS:String = "distanceRadius";
+		public static const TYPE_DISTANCE_RADIUS_WIDTH:String = "distanceRadiusWidth";
+		public static const TYPE_DISTANCE_RADIUS_HEIGHT:String = "distanceRadiusHeight";
 		public static const TYPE_BOUNDING_BOX:String = "boundingBox";
 		public static const TYPE_BOUNDING_CIRCLE:String = "boundingCircle";
 		
@@ -78,30 +79,32 @@ package org.rixel.Core.collision
 			Event_collision = new CollisionSignal(RxSprite,RxSprite);
 		}
 		
-		private function pixelPerfect(rxSprite:RxSprite):void
+		private function pixelPerfect(x1:int,y1:int,rxSprite:RxSprite,x2:int,y2:int):Boolean
 		{
-			_p1.x = _sprite.rixel::renderX;
-			_p1.y = _sprite.rixel::renderY;
+			_p1.x = x1;
+			_p1.y = y1;
 			
-			_p2.x = rxSprite.rixel::renderX;
-			_p2.y = rxSprite.rixel::renderY;
+			_p2.x = x2;
+			_p2.y = y2;
 			
 			if(_sprite.rixel::collisionFrame.hitTest(_p1,255,rxSprite.rixel::collisionFrame,_p2) )
 			{
-				Event_collision.dispatch(_sprite,rxSprite);
+				return true;
+			}else{
+				return false;
 			}
 		}
 		
-		private function distanceRadiusBased(rxSprite:RxSprite):void
+		private function distanceRadiusBasedWidth(x1:int,y1:int,rxSprite:RxSprite,x2:int,y2:int):Boolean
 		{	
-			_x1 = (_sprite.width*.5) + _sprite.rixel::renderX;
-			_y1 = (_sprite.height*.5) + _sprite.rixel::renderY;
+			_x1 = (_sprite.width*.5) + x1;
+			_y1 = (_sprite.height*.5) + x2;
 			
 			_width1 = _sprite.width*.5;
 			_width2 = rxSprite.width*.5;
 			
-			_x2 = _width2 + rxSprite.rixel::renderX;
-			_y2 = (rxSprite.height * .5) + rxSprite.rixel::renderY;
+			_x2 = _width2 + x2;
+			_y2 = (rxSprite.height * .5) + y2;
 			
 			_x3 = _x1 - _x2;
 			_y3 = _y1 - _y2;
@@ -109,32 +112,59 @@ package org.rixel.Core.collision
 			
 			if((_x3) * (_x3) + (_y3) * (_y3) < _width3 * _width3)
 			{
-				Event_collision.dispatch(_sprite,rxSprite);
+				return true;
+			}else{
+				return false
 			}
 		}
 		
-		private function boundingBoxBased(rxSprite:RxSprite):void
+		private function distanceRadiusBasedHeight(x1:int,y1:int,rxSprite:RxSprite,x2:int,y2:int):Boolean
 		{	
-			_x1 = _sprite.rixel::renderX;
-			_y1  = _sprite.rixel::renderY;
+			_x1 = (_sprite.width*.5) + x1;
+			_y1 = (_sprite.height*.5) + y1;
+			
+			_width1 = _sprite.height*.5;
+			_width2 = rxSprite.height*.5;
+			
+			_x2 = _width2 + x2;
+			_y2 = (rxSprite.height * .5) + y2;
+			
+			_x3 = _x1 - _x2;
+			_y3 = _y1 - _y2;
+			_width3 = _width1 + _width2;
+			
+			if((_x3) * (_x3) + (_y3) * (_y3) < _width3 * _width3)
+			{
+				return true;
+			}else{
+				return false
+			}
+		}
+		
+		private function boundingBoxBased(x1:int,y1:int,rxSprite:RxSprite,x2:int,y2:int):Boolean
+		{	
+			_x1 = x1;
+			_y1  = y1;
 			_width1 = _sprite.width;
 			_height1 = _sprite.height;
 			
-			_x2 = rxSprite.rixel::renderX;
-			_y2 = rxSprite.rixel::renderY;
+			_x2 = x2;
+			_y2 = y2;
 			_width2 = rxSprite.width;
 			_height2 = rxSprite.height;
 			
 			if( !(_x1 > _x2 + _width2 || _y1 > _y2 + _height2 || _x1 + _width1 < _x2 || _y1 + _height1 < _y2) )
 			{
-				Event_collision.dispatch(_sprite,rxSprite);
+				return true;
+			}else{
+				return false;
 			}
 		}
 		
-		private function boundingCircleBased(rxSprite:RxSprite):void
+		private function boundingCircleBased(x1:int,y1:int,rxSprite:RxSprite,x2:int,y2:int):Boolean
 		{
-			_p1.x = _sprite.rixel::renderX;
-			_p1.y = _sprite.rixel::renderY;
+			_p1.x = x1;
+			_p1.y = y1;
 			
 			_x1 = (_sprite.width*.5) + _p1.x;
 			_y1 = (_sprite.height*.5) + _p1.y;
@@ -144,8 +174,8 @@ package org.rixel.Core.collision
 			
 			_boundingCircleRadius = _x3 * _x3 + _y3 * _y3 ;
 			
-			_rect2.x = rxSprite.rixel::renderX;
-			_rect2.y = rxSprite.rixel::renderY;
+			_rect2.x = x2;
+			_rect2.y = y2;
 			
 			_x2 = rxSprite.width*.5 + _rect2.x;
 			_y2 = rxSprite.height*.5 + _rect2.y;
@@ -158,7 +188,9 @@ package org.rixel.Core.collision
 			
 			if( (_x2) * (_x2) + (_y2) * (_y2) < _boundingCircleRadius + ( ((_x3) * (_x3)) + ((_y3) * (_y3)) ) )
 			{
-				Event_collision.dispatch(_sprite,rxSprite);
+				return true;
+			}else{
+				return false;
 			}
 		}
 		
@@ -180,22 +212,67 @@ package org.rixel.Core.collision
 						switch(_collisionType)
 						{
 							case "pixelPerfect":
-								this.pixelPerfect(_testproxy.sprite);
+								if(pixelPerfect(_sprite.rixel::renderX,_sprite.rixel::renderY,_testproxy.sprite,_testproxy.sprite.rixel::renderX,_testproxy.sprite.rixel::renderY))
+								{
+									Event_collision.dispatch(_sprite,_testproxy.sprite);
+								}
 								break
-							case "distanceRadius":
-								this.distanceRadiusBased(_testproxy.sprite);
+							case "distanceRadiusWidth":
+								if(distanceRadiusBasedWidth(_sprite.rixel::renderX,_sprite.rixel::renderY,_testproxy.sprite,_testproxy.sprite.rixel::renderX,_testproxy.sprite.rixel::renderY))
+								{
+									Event_collision.dispatch(_sprite,_testproxy.sprite);
+								}
+								break;
+							case "distanceRadiusHeight":
+								if(distanceRadiusBasedHeight(_sprite.rixel::renderX,_sprite.rixel::renderY,_testproxy.sprite,_testproxy.sprite.rixel::renderX,_testproxy.sprite.rixel::renderY))
+								{
+									Event_collision.dispatch(_sprite,_testproxy.sprite);
+								}
 								break;
 							case "boundingBox":
-								this.boundingBoxBased(_testproxy.sprite);
+								if(boundingBoxBased(_sprite.rixel::renderX,_sprite.rixel::renderY,_testproxy.sprite,_testproxy.sprite.rixel::renderX,_testproxy.sprite.rixel::renderY))
+								{
+									Event_collision.dispatch(_sprite,_testproxy.sprite);
+								}
 								break;
 							case "boundingCircle":
-								this.boundingCircleBased(_testproxy.sprite);
+								if(boundingCircleBased(_sprite.rixel::renderX,_sprite.rixel::renderY,_testproxy.sprite,_testproxy.sprite.rixel::renderX,_testproxy.sprite.rixel::renderY))
+								{
+									Event_collision.dispatch(_sprite,_testproxy.sprite);
+								}
 								break;
 						}
 					}
 					_testproxy = _testproxy.nextInNode;
 				}
 			}
+		}
+		
+		public function hitTest(x1:int,y1:int,rxSprite:RxSprite,x2:int,y2:int,type:String = RxCollision.TYPE_PIXEL_PERFECT):Boolean
+		{	
+			switch(type)
+			{
+				case "pixelPerfect":
+					return pixelPerfect(x1,y1,rxSprite,x2,y2);
+					break
+				case "distanceRadiusWidth":
+					return distanceRadiusBasedWidth(x1,y1,_testproxy.sprite,x2,y2);
+					break;
+				case "distanceRadiusHeight":
+					return distanceRadiusBasedHeight(x1,y1,rxSprite,x2,y2)
+					break;
+				case "boundingBox":
+					return boundingBoxBased(x1,y1,rxSprite,x2,y2);
+					break;
+				case "boundingCircle":
+					return boundingCircleBased(x1,y1,rxSprite,x2,y2);
+					break;
+				default:
+					throw new Error("Invalid type, use the static type constants on the RxCollision class");
+					return false;
+					break;
+			}
+					
 		}
 		
 		////////////////////GETTERS SETTERS////////////////
