@@ -4,25 +4,12 @@ package org.rixel.Core.main
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
+	import flash.display.Stage;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
-	import flash.system.System;
-	
-	import mx.managers.SystemManager;
 	
 	import org.rixel.Core.Geometry.RxRectangle;
-	import org.rixel.Core.displayObjects.RxAnimation;
-	import org.rixel.Core.displayObjects.RxSprite;
-	import org.rixel.Core.nameSpaces.rixel;
-	import org.rixel.Core.quadTree.RxProxyBase;
-	import org.rixel.Core.quadTree.RxQuadTree;
-	import org.rixel.Core.quadTree.RxQuadTreeNode;
-	import org.rixel.Core.quadTree.RxQuadTreeProxy;
-	
-	import spark.components.mediaClasses.VolumeBar;
-	
-	use namespace rixel;
 	
 	public class RxStage extends Sprite
 	{
@@ -34,12 +21,13 @@ package org.rixel.Core.main
 		private var _smoothing:Boolean;
 		 
 		private var _renderMode:String;
-		private var _displayList:Vector.<RxSprite>;
+		private var _displayList:Vector.<Abstract_RxDisplayObject>;
 		private var _bmpCanvas:Bitmap;
 		private var _bitmapBuffer:BitmapData;
 		private var _renderRect:Rectangle;
 		
 		private var _tree:RxQuadTree;
+		private var _mouse:RxMouse;
 		private var _debugCanvas:Sprite = new Sprite();
 		private var _debugRect:RxRectangle = new RxRectangle();
 		private var _debugNode:RxQuadTreeNode;
@@ -91,9 +79,12 @@ package org.rixel.Core.main
 			_tree = new RxQuadTree(5,RxQuadTree.MAX_1024_OBJECTS);
 		 	_tree.setWorldBounds(new RxRectangle(-_padding,-_padding,_width + (_padding*2),_height + (_padding*2)) );
 			
+			//will need to fix the mouse
+			_mouse = new RxMouse(_tree,this);
+			
 			_renderRect = new Rectangle(0,0,_width,_height);
 			
-			_displayList = new Vector.<RxSprite>;
+			_displayList = new Vector.<Abstract_RxDisplayObject>;
 			
 			//GPU rendering mode setup
 			if(_renderMode == RxStage.BLIT_RENDERER)
@@ -124,6 +115,8 @@ package org.rixel.Core.main
 					break;
 			}
 			
+			_mouse.update();
+			
 		}
 		
 		//this is the render loop for the blit render engine, it looks a bit cluttered instead of abstracting parts out and splitting it up
@@ -146,17 +139,17 @@ package org.rixel.Core.main
 			//clear bitmap
 			_bitmapBuffer.fillRect(rect,0);
 			
-			for each(var s2D:IBitmapRender in _displayList)
+			for each(var s2D:Abstract_RxDisplayObject in _displayList)
 			{
-				_tree.moveProxy(s2D.proxyId);
-				 
+				_tree.moveProxy(s2D.componentProxy.proxyId);
+				s2D.update();
 				
 				//_debugNode = _tree.getNodeContaining(s2D.proxyId);
 				//_debugNode = s2D.proxy.node;
 			//	_debugCanvas.graphics.drawRect(_debugNode.xmin,_debugNode.ymin,_debugNode.xmax - _debugNode.xmin, _debugNode.ymax - _debugNode.ymin);
 				
-				sX = s2D.boundsX;
-				sY = s2D.boundsY;
+				sX = s2D.componentDisplayable.boundsX;
+				sY = s2D.componentDisplayable.boundsY;
 				sWidth = s2D.width;
 				sHeight = s2D.height;
 				
@@ -202,7 +195,7 @@ package org.rixel.Core.main
 				point.x = sX + rectXOffset;
 				point.y = sY + rectYOffset;
 				
-				_bitmapBuffer.copyPixels(s2D.frame,rect, point,null,null,true);
+				_bitmapBuffer.copyPixels((s2D.componentDisplayable as Abstract_RxBitmap_DisplayObject).frame,rect, point,null,null,true);
 			}
 			
 			_bitmapBuffer.unlock();
@@ -211,7 +204,7 @@ package org.rixel.Core.main
 		private function graphicRenderer():void
 		{
 			this.graphics.clear();
-			for each(var s2D:RxSprite in _displayList)
+			for each(var s2D:RxComponent_BitmapSprite in _displayList)
 			{
 				this.graphics.beginBitmapFill(s2D.frame,new Matrix(1,0,0,1,s2D.x,s2D.y),false,false);
 				this.graphics.drawRect(s2D.x,s2D.y,s2D.width,s2D.height);
@@ -219,9 +212,9 @@ package org.rixel.Core.main
 			}
 		}
 		
-		public function rxAddChild(child:RxSprite):RxSprite
+		public function rxAddChild(child:Abstract_RxDisplayObject):Abstract_RxDisplayObject
 		{
-			child.proxyId = _tree.createProxy(child);
+			child.componentProxy.proxyId = _tree.createProxy(child.componentProxy);
 			_displayList.push(child);
 			
 			return child;
@@ -238,7 +231,8 @@ package org.rixel.Core.main
 		////////////////////STATICS////////////////////////
 		public static function init():void
 		{
-			RxSprite.rixel::init();
+			RxComponent_BitmapSprite.init();
+			RxComponent_BitmapAnimation.init();
 			_initialized = true;
 		}
 		

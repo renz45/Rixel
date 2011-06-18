@@ -2,7 +2,7 @@ package org.rixel.Core.main
 {
 	import flash.display.BitmapData;
 
-	public interface IBitmapRender extends IRender
+	public interface IBitmapRender
 	{
 		function get frame():BitmapData;
 	}
