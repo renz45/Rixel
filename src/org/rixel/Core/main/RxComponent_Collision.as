@@ -1,3 +1,4 @@
+//TODO investigate if a hitlist is needed for the collision event
 package org.rixel.Core.main
 {
 	import flash.display.BitmapData;
@@ -5,6 +6,12 @@ package org.rixel.Core.main
 	
 	import org.rixel.Core.Geometry.RxPoint;
 	import org.rixel.Core.Geometry.RxRectangle;
+	import org.rixel.Core.collision.CollisionSignal;
+	import org.rixel.Core.collision.CollisionType;
+	import org.rixel.Core.displayObjects.Abstract_RxDisplayObject;
+	import org.rixel.Core.displayObjects.IDisplayable;
+	import org.rixel.Core.quadtree.IRxProxy;
+	import org.rixel.Core.quadtree.RxQuadTreeProxy;
 	
 	public class RxComponent_Collision
 	{
@@ -37,23 +44,17 @@ package org.rixel.Core.main
 		private var _testproxy:RxQuadTreeProxy;
 		private var _proxyObject:IRxProxy;
 		
-		private var _collisionType:String;
-		
 		private var _xOffset:int;
 		private var _yOffset:int;
+		
+		private var _collisionType:String;
 		
 		public var Event_collision:CollisionSignal;
 		public var Event_mouseCollision:CollisionSignal;
 		
-		public static const TYPE_PIXEL_PERFECT:String = "pixelPerfect";
-		public static const TYPE_DISTANCE_RADIUS_WIDTH:String = "distanceRadiusWidth";
-		public static const TYPE_DISTANCE_RADIUS_HEIGHT:String = "distanceRadiusHeight";
-		public static const TYPE_BOUNDING_BOX:String = "boundingBox";
-		public static const TYPE_BOUNDING_CIRCLE:String = "boundingCircle";
-		
-		public function RxComponent_Collision(displayObject:IDisplayable,proxyObject:IRxProxy,type:String = RxComponent_Collision.TYPE_PIXEL_PERFECT)
+		public function RxComponent_Collision(displayable:IDisplayable,proxyObject:IRxProxy,type:String = CollisionType.TYPE_PIXEL_PERFECT)
 		{
-			_displayObject = displayObject;
+			_displayObject = displayable;
 			_proxyObject = proxyObject;
 			_collisionType = type;
 			
@@ -93,7 +94,7 @@ package org.rixel.Core.main
 				return false;
 			}
 		}
-		
+		//FIXME fix these two distance based collision to work with the offset reference point
 		private function distanceRadiusBasedWidth(x1:int,y1:int,rxDisplayObject:IDisplayable,x2:int,y2:int):Boolean
 		{	
 			_x1 = (_displayObject.width*.5) + x1;
@@ -274,7 +275,7 @@ package org.rixel.Core.main
 			}
 		}
 		
-		public function hitTest(x1:int,y1:int,rxDisplayObject:Abstract_RxDisplayObject,x2:int,y2:int,type:String = RxComponent_Collision.TYPE_PIXEL_PERFECT):Boolean
+		public function hitTest(x1:int,y1:int,rxDisplayObject:Abstract_RxDisplayObject,x2:int,y2:int,type:String = CollisionType.TYPE_PIXEL_PERFECT):Boolean
 		{	
 			switch(type)
 			{
