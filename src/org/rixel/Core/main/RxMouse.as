@@ -1,8 +1,16 @@
+//TODO tweak the mouse so the mouseOver event only gets fired to the top most element and not all elements colliding with the mouse
 package org.rixel.Core.main
 {
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
 	import flash.events.MouseEvent;
+	
+	import org.rixel.Core.collision.CollisionType;
+	import org.rixel.Core.displayObjects.Abstract_RxDisplayObject;
+	import org.rixel.Core.displayObjects.IDisplayable;
+	import org.rixel.Core.mouse.IMouseTriggerable;
+	import org.rixel.Core.quadtree.IRxProxy;
+	import org.rixel.Core.quadtree.RxQuadTree;
 	
 
 	public class RxMouse extends Abstract_internalDisplayObject implements IDisplayable
@@ -17,7 +25,6 @@ package org.rixel.Core.main
 		private var _quadTree:RxQuadTree;
 		private var _rolloverCollision:RxComponent_Collision;
 		private var _clickCollision:RxComponent_Collision;
-		private var _component_quadtreeProxy:IRxProxy;
 		
 		private var _mouseItem:IMouseTriggerable;
 		private var _mouseAction:String;
@@ -51,12 +58,17 @@ package org.rixel.Core.main
 			insertIntoTree();
 		}
 		
+		override protected function setupDisplayable():void
+		{
+			
+		}
+		
 		private function initListeners():void
 		{
-			_rolloverCollision = new RxComponent_Collision(this,_component_quadtreeProxy,RxComponent_Collision.TYPE_PIXEL_PERFECT);
+			_rolloverCollision = new RxComponent_Collision(this,_component_quadtreeProxy,CollisionType.TYPE_PIXEL_PERFECT);
 			_rolloverCollision.Event_mouseCollision.add(onCollide);
 			
-			_clickCollision = new RxComponent_Collision(this,_component_quadtreeProxy,RxComponent_Collision.TYPE_PIXEL_PERFECT);
+			_clickCollision = new RxComponent_Collision(this,_component_quadtreeProxy,CollisionType.TYPE_PIXEL_PERFECT);
 			_clickCollision.Event_mouseCollision.add(onClick);
 			
 			_stage.addEventListener(MouseEvent.CLICK,stageClick);
