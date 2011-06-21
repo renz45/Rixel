@@ -1,7 +1,6 @@
 package org.rixel.Core.displayObjects
 {
-	import org.rixel.Core.main.Abstract_RxDisplayObject;
-	import org.rixel.Core.main.RxComponent_BitmapAnimation;
+	import org.rixel.Core.displayObjects.bitmap.RxComponent_BitmapAnimation;
 	
 	public class RxAnimation extends Abstract_RxDisplayObject
 	{
@@ -49,8 +48,6 @@ package org.rixel.Core.displayObjects
 			(_component_displayable as RxComponent_BitmapAnimation).stop();
 		}
 		
-		
-		
 		////////////GETTERS SETTERS////////////
 		public function get reverse():Boolean
 		{
@@ -72,4 +69,4 @@ package org.rixel.Core.displayObjects
 			return (_component_displayable as RxComponent_BitmapAnimation).currentFrame;
 		}
 	}
-}
+} 
