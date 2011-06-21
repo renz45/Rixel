@@ -1,5 +1,10 @@
 package org.rixel.Core.main
 {
+	import org.rixel.Core.displayObjects.IDisplayable;
+	import org.rixel.Core.quadtree.IRxProxy;
+	import org.rixel.Core.quadtree.RxQuadTreeNode;
+	import org.rixel.Core.quadtree.RxQuadTreeProxy;
+
 	public class RxComponent_QuadtreeProxyObject implements IRxProxy
 	{
 		private var _x:int;
