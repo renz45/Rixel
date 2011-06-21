@@ -1,4 +1,4 @@
-package org.rixel.Core.main
+package org.rixel.Core.quadtree
 {	
 	/*
 	Based on the quadtree used in the open source Motor physics engine by Michael Baczynski:
@@ -8,10 +8,9 @@ package org.rixel.Core.main
 	import flash.system.System;
 	
 	import org.rixel.Core.Geometry.RxRectangle;
-	import org.rixel.Core.main.IRxProxy;
-	import org.rixel.Core.main.RxQuadTreeNode;
-	import org.rixel.Core.main.RxQuadTreeProxy;
-	import org.rixel.Core.main.RxQuadTreeProxyBase;
+	import org.rixel.Core.quadtree.RxQuadTreeNode;
+	import org.rixel.Core.quadtree.RxQuadTreeProxy;
+	import org.rixel.Core.quadtree.RxQuadTreeProxyBase;
 	
 	public class RxQuadTree
 	{

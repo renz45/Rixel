@@ -1,9 +1,12 @@
-package org.rixel.Core.main
+//TODO add function callbacks to frames
+//TODO add gotoAndPlayUntil Method - goes to specified frame and stops/repeats at specified frame
+package org.rixel.Core.displayObjects.bitmap
 {
 	import flash.display.BitmapData;
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
 	import flash.geom.Rectangle;
+	import org.rixel.Core.displayObjects.VO.Sprite_VO;
 	
 	public class RxComponent_BitmapAnimation extends Abstract_RxBitmap_DisplayObject
 	{ 
@@ -79,7 +82,7 @@ package org.rixel.Core.main
 				_totalFrames = _imageDataFrames.length;
 				
 				//dispatch loaded event
-				Event_MovieclipLoaded.dispatch(this);
+				Event_Loaded.dispatch(this);
 			}
 			
 			newClass = null;
@@ -95,8 +98,8 @@ package org.rixel.Core.main
 			//finds max dimensions and offsets.
 			findMaxDimensions(mc);
 			
-			mc.x = _xOffsetMin;
-			mc.y = _yOffsetMin; 
+			mc.x = _xOffsetMin * -1;
+			mc.y = _yOffsetMin * -1; 
 			container.addChild(mc);
 			
 			_width += _xOffsetMax;
@@ -129,7 +132,7 @@ package org.rixel.Core.main
 			_imageDataFrames = vo.frames;
 			
 			//dispatch loaded event
-			this.Event_MovieclipLoaded.dispatch(this);
+			this.Event_Loaded.dispatch(this);
 		}
 		
 		//this method loops through all the frames of a movieclip and finds max width and max heights. It also finds offsets so we can account
@@ -183,8 +186,8 @@ package org.rixel.Core.main
 			}
 			
 			
-			_xOffsetMin =_xOffsetMin * -1;
-			_yOffsetMin = _yOffsetMin * -1;
+			_xOffsetMin =_xOffsetMin;
+			_yOffsetMin = _yOffsetMin;
 			
 			_xOffsetMax = Math.ceil(_xOffsetMax);
 			_yOffsetMax = Math.ceil(_yOffsetMax);
@@ -277,12 +280,12 @@ package org.rixel.Core.main
 		
 		override public function get boundsX():int
 		{
-			return _x - _xOffsetMin;
+			return _x + _xOffsetMin;
 		}
 		
 		override public function get boundsY():int
 		{
-			return _y - _yOffsetMin;
+			return _y + _yOffsetMin;
 		}
 		
 		override public function get xOffset():int

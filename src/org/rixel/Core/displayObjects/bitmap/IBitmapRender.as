@@ -1,4 +1,4 @@
-package org.rixel.Core.main
+package org.rixel.Core.displayObjects.bitmap
 {
 	import flash.display.BitmapData;
 

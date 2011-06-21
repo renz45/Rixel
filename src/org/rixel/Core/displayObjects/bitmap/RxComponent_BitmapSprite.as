@@ -1,8 +1,12 @@
-package org.rixel.Core.main
+package org.rixel.Core.displayObjects.bitmap
 {
 	import flash.display.BitmapData;
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
+	import flash.geom.Matrix;
+	import flash.geom.Rectangle;
+	
+	import org.rixel.Core.displayObjects.VO.Sprite_VO;
 
 	public class RxComponent_BitmapSprite extends Abstract_RxBitmap_DisplayObject
 	{	
@@ -10,6 +14,8 @@ package org.rixel.Core.main
 		private var _className:String;
 		private var _displayObjectClass:Class;
 		private var _frameData:BitmapData;
+		private var _xOffset:int;
+		private var _yOffset:int;
 
 		private static var _displayObjectList:Object;
 		private static var _placeHolderData:BitmapData;
@@ -26,6 +32,11 @@ package org.rixel.Core.main
 		
 		protected function init():void
 		{
+			_x = 0;
+			_y = 0;
+			
+			var vo:Sprite_VO;
+			
 			if( !_displayObjectList.hasOwnProperty(_className) )
 			{	
 				var newClass:Sprite = new _displayObjectClass();
@@ -35,22 +46,44 @@ package org.rixel.Core.main
 					throw new Error("The class argument must be of type Sprite");
 				}
 				
-				var vo:Sprite_VO = new Sprite_VO();
+				vo = new Sprite_VO();
 				vo.name = _className;
 				
 				_displayObjectList[_className] = vo;
 				
 				convertSprite(newClass); 
+			}else{
+				vo = (_displayObjectList[_className] as Sprite_VO);
+				_frameData = vo.frame;
+				_xOffset = vo.xOffset;
+				_yOffset = vo.yOffset;
+				_height = vo.height;
+				_width = vo.width;
 			}
 		}
-
+		//FIXME might need to fix a bug where borders are getting cut off in the bitmap conversion process
 		private function convertSprite(sprite:Sprite):void
 		{
-			_frameData = new BitmapData(sprite.width,sprite.height,_transparent,_fillColor);
+			var vo:Sprite_VO = _displayObjectList[_className] as Sprite_VO;
+			var sp:Sprite = new Sprite();
+			var bounds:Rectangle = sprite.getBounds(sprite);
+			vo.width = _width = sprite.width;
+			vo.height= _height = sprite.height;
+			vo.xOffset = _xOffset = bounds.x;
+			vo.yOffset = _yOffset = bounds.y;
 			
-			_frameData.draw(sprite);
+			sp.addChild(sprite);
+			sprite.x = -_xOffset;
+			sprite.y = -_yOffset;
 			
-			Event_MovieclipLoaded.dispatch(this);
+			_frameData = new BitmapData(sp.width,sp.height,_transparent,_fillColor);
+			_frameData.draw(sp);
+			
+			vo.frame = _frameData;
+			
+			sprite = null;
+			sp = null;
+			Event_Loaded.dispatch(this);
 		}
 
 		/////////////////////CALLBACKS////////////////////
@@ -66,14 +99,24 @@ package org.rixel.Core.main
 		
 		//these render values will account for the offset of the movieclip. So if a registration point was in the center the position will be the same
 		//the function is a engine specific function since users don't need to see these values.
+		override public function get boundsX():int
+		{
+			return _x + _xOffset;
+		}
+		
+		override public function get boundsY():int
+		{
+			return _y + _yOffset;
+		}
+		
 		override public function get xOffset():int
 		{
-			return 0;
+			return _xOffset;
 		}
 		
 		override public function get yOffset():int
 		{
-			return 0;
+			return _yOffset;
 		}
 		
 		//engine specific function used by the Stage2D to render the image.

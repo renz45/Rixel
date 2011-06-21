@@ -1,9 +1,10 @@
-package org.rixel.Core.main
+package org.rixel.Core.displayObjects.bitmap
 {
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
 	
 	import org.osflash.signals.Signal;
+	import org.rixel.Core.displayObjects.IDisplayable;
 
 	public class Abstract_RxBitmap_DisplayObject implements IBitmapRender, IDisplayable
 	{
@@ -18,7 +19,7 @@ package org.rixel.Core.main
 		protected var _dataLoaded:Boolean;
 		protected var _params:Object;
 		
-		public var Event_MovieclipLoaded:Signal;
+		public var Event_Loaded:Signal;
 		
 		public function Abstract_RxBitmap_DisplayObject(params:Object = null)
 		{
@@ -61,7 +62,7 @@ package org.rixel.Core.main
 		
 		private function initEvents():void
 		{
-			Event_MovieclipLoaded = new Signal(Abstract_RxBitmap_DisplayObject);
+			Event_Loaded = new Signal(Abstract_RxBitmap_DisplayObject);
 		}
 		
 		/////////////////////CALLBACKS////////////////////
@@ -81,7 +82,7 @@ package org.rixel.Core.main
 		}
 		
 		public function get y():int
-		{
+		{ 
 			return _y;
 		}
 		

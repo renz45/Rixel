@@ -1,4 +1,4 @@
-package org.rixel.Core.main
+package org.rixel.Core.mouse
 {
 	import org.osflash.signals.Signal;
 
@@ -13,6 +13,8 @@ package org.rixel.Core.main
 		{
 			
 		}
+		
+
 		
 		
 		///////////////CALLBACKS///////////////

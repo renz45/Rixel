@@ -1,4 +1,4 @@
-package org.rixel.Core.main
+package org.rixel.Core.mouse
 {
 	public interface IMouseTriggerable
 	{

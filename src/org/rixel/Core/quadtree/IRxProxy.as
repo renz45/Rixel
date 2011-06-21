@@ -1,5 +1,7 @@
-package org.rixel.Core.main
+package org.rixel.Core.quadtree
 {
+	import org.rixel.Core.main.Abstract_internalDisplayObject;
+	import org.rixel.Core.displayObjects.IDisplayable;
 
 	public interface IRxProxy
 	{

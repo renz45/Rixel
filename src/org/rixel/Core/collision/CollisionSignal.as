@@ -1,4 +1,4 @@
-package org.rixel.Core.main
+package org.rixel.Core.collision
 {
 	import mx.states.OverrideBase;
 	
