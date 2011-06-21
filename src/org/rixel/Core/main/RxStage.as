@@ -1,15 +1,21 @@
+//TODO vector rendering
+//TODO Redraw areas
 package org.rixel.Core.main
 {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
-	import flash.display.DisplayObject;
 	import flash.display.Sprite;
-	import flash.display.Stage;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	
 	import org.rixel.Core.Geometry.RxRectangle;
+	import org.rixel.Core.displayObjects.Abstract_RxDisplayObject;
+	import org.rixel.Core.displayObjects.bitmap.Abstract_RxBitmap_DisplayObject;
+	import org.rixel.Core.displayObjects.bitmap.RxComponent_BitmapAnimation;
+	import org.rixel.Core.displayObjects.bitmap.RxComponent_BitmapSprite;
+	import org.rixel.Core.quadtree.RxQuadTree;
+	import org.rixel.Core.quadtree.RxQuadTreeNode;
 	
 	public class RxStage extends Sprite
 	{
@@ -220,6 +226,7 @@ package org.rixel.Core.main
 			return child;
 		}
 		
+		//TODO addChildAt method
 		/*public function rxAddChildAt(child:RxSprite, index:int):RxSprite
 		{
 			return child;
