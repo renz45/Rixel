@@ -1,4 +1,5 @@
 //TODO tweak the mouse so the mouseOver event only gets fired to the top most element and not all elements colliding with the mouse
+//TODO find a more elegent way to provide mouse functionality. This works but it feels a tad hacky.
 package org.rixel.Core.main
 {
 	import flash.display.BitmapData;
@@ -12,7 +13,11 @@ package org.rixel.Core.main
 	import org.rixel.Core.quadtree.IRxProxy;
 	import org.rixel.Core.quadtree.RxQuadTree;
 	
-
+	/**
+	 * translates mouse actions to the bitmap displayObjects. This class calls functions in the RxComponent_mouse component. 
+	 * @author adamrensel
+	 * 
+	 */	
 	public class RxMouse extends Abstract_internalDisplayObject implements IDisplayable
 	{
 		private var _x:int;
@@ -35,6 +40,12 @@ package org.rixel.Core.main
 		private const MOUSE_UP:String = "mouseUp";
 		private const MOUSE_CLICK:String = "mouseClick";
 		
+		/**
+		 * 
+		 * @param quadTree RxQuadTree
+		 * @param rxStage
+		 * @private
+		 */		
 		public function RxMouse(quadTree:RxQuadTree,rxStage:RxStage)
 		{
 			_quadTree = quadTree;
@@ -201,7 +212,7 @@ package org.rixel.Core.main
 			_height = value;
 		}
 		
-		public function get collisionFrame():BitmapData
+		public function get staticFrame():BitmapData
 		{
 			return _bmd;
 		}

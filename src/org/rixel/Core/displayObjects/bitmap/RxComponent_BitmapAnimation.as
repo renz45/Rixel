@@ -5,9 +5,18 @@ package org.rixel.Core.displayObjects.bitmap
 	import flash.display.BitmapData;
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
+	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
-	import org.rixel.Core.displayObjects.VO.Sprite_VO;
 	
+	import org.rixel.Core.displayObjects.VO.Sprite_VO;
+	/**
+	 * This is a bitmap animation class. It has methods and functionality similar to a Flash Movieclip, although it is not a display object container, and doesn't
+	 * have the addchild functionality. This is done for the sake of speed. This class recycles bitmapData vectors, so if a movieclip is used more than once
+	 * it is only converted once and frames are shared between all instances of the animation class that use that movieclip.
+	 *  
+	 * @author adamrensel
+	 * 
+	 */	
 	public class RxComponent_BitmapAnimation extends Abstract_RxBitmap_DisplayObject
 	{ 
 		private var _className:String;
@@ -28,13 +37,24 @@ package org.rixel.Core.displayObjects.bitmap
 		private static var _placeHolderData:BitmapData;
 		
 		private var _imageDataFrames:Vector.<BitmapData>;
-		
-		public function RxComponent_BitmapAnimation(movieclip:Class, params:Object = null)
+		/**
+		 * constructor for creating a RxAnimation. 
+		 * @param movieclipClass : Class This is not an instance of the movieclip, it is the classname of the movieclip. The RxAnimation class will decide if it can reuse
+		 * data previously converted, or if it needs to create and convert a new instance of the movieclip Class passed in.
+		 * @param params : Object settings object for the RxAnimation class. The current settings are {fillColor:0x00000000, transparent:true}
+		 * 
+		 */		
+		public function RxComponent_BitmapAnimation(movieclipClass:Class, params:Object = null)
 		{	
 			super(params);
 			
-			_displayObjectClass = movieclip;
-			_className = (movieclip as Class).toString();
+			if(_displayObjectList == null)
+			{
+				throw new Error("Please initialize Rixel before instantiating the RxAnimation --> Rixel.init()");
+			}
+			
+			_displayObjectClass = movieclipClass;
+			_className = (movieclipClass as Class).toString();
 			
 			init(); 
 		}
@@ -91,16 +111,15 @@ package org.rixel.Core.displayObjects.bitmap
 		//takes a movieclip and converts the frames into a vector of bitmap data
 		private function convertMovieClip(mc:MovieClip):void
 		{
-			var container:Sprite = new Sprite();
 			
 			var frameList:Vector.<BitmapData> = new Vector.<BitmapData>;
 			
 			//finds max dimensions and offsets.
 			findMaxDimensions(mc);
 			
-			mc.x = _xOffsetMin * -1;
-			mc.y = _yOffsetMin * -1; 
-			container.addChild(mc);
+			var m:Matrix = new Matrix();
+			m.tx = _xOffsetMin * -1;
+			m.ty = _yOffsetMin * -1;
 			
 			_width += _xOffsetMax;
 			_height += _yOffsetMax;
@@ -111,7 +130,7 @@ package org.rixel.Core.displayObjects.bitmap
 				mc.gotoAndStop(i);
 				
 				var bmd:BitmapData = new BitmapData(_width,_height,_transparent,_fillColor);
-				bmd.draw(container);
+				bmd.draw(mc,m);
 				frameList.push(bmd);
 			}
 			
@@ -138,6 +157,7 @@ package org.rixel.Core.displayObjects.bitmap
 		//this method loops through all the frames of a movieclip and finds max width and max heights. It also finds offsets so we can account
 		//for registration points that aren't in the top left.
 		//This solves the problem of a rotating object getting it's corners cut off during the rotation cycle, and movieclips that contain sliding animation
+		//not displaying properly
 		private function findMaxDimensions(mc:MovieClip):void
 		{
 			var maxWidth:int = 0;
@@ -225,17 +245,33 @@ package org.rixel.Core.displayObjects.bitmap
 			_isPlaying = false;
 		}
 		
+		/**
+		 * Similar to the Flash movieclip method. Goes to frame number specified and plays from there, 
+		 * if the frame is greater than the total number, than the last frame is used 
+		 * @param frameNumber : int frame number to move to and play from.
+		 * @param reverse : Boolean indicates if reverse playing is to be set
+		 * 
+		 */		
 		public function gotoAndPlay(frameNumber:int, reverse:Boolean = false):void
 		{
+			this.reverse = reverse;
 			gotoAndStop(frameNumber);
 			_isPlaying = true;
 		}
 		
+		/**
+		 * starts the RxAnimation playing from where ever the playhead is currently. 
+		 * 
+		 */		
 		public function play():void
 		{
 			_isPlaying = true;
 		}
 		
+		/**
+		 * Stops the play head at whatever the currentFrame value is 
+		 * 
+		 */		
 		public function stop():void
 		{
 			_isPlaying = false;
@@ -243,16 +279,31 @@ package org.rixel.Core.displayObjects.bitmap
 		}
 		////////////////////GETTERS SETTERS////////////////
 		
+		/**
+		 * Returns the number of the current frame being displayed. 
+		 * @return  int
+		 * 
+		 */		
 		public function get currentFrame():int
 		{
 			return _currentFrame;
 		}
 		
+		/**
+		 * returns the number of total frames in the animation 
+		 * @return int
+		 * 
+		 */		
 		public function get totalFrames():int
 		{
 			return _totalFrames;
 		}
 		
+		/**
+		 * sets the play direction, true being reverse and false being forward 
+		 * @param value
+		 * 
+		 */		
 		public function set reverse(value:Boolean):void
 		{
 			if(value)
@@ -263,6 +314,11 @@ package org.rixel.Core.displayObjects.bitmap
 			}
 		}
 		
+		/**
+		 * returns the value for reverse, true being reverse, false being forward 
+		 * @return 
+		 * 
+		 */		
 		public function get reverse():Boolean
 		{
 			if(_playDirection == -1)
@@ -277,29 +333,53 @@ package org.rixel.Core.displayObjects.bitmap
 		
 		//these render values will account for the offset of the movieclip. So if a registration point was in the center the position will be the same
 		//the function is a engine specific function since users don't need to see these values.
-		
+		/**
+		 * 
+		 * @inheritDoc 
+		 * 
+		 */		
 		override public function get boundsX():int
 		{
 			return _x + _xOffsetMin;
 		}
 		
+		/**
+		 * 
+		 * @inheritDoc 
+		 * 
+		 */		
 		override public function get boundsY():int
 		{
 			return _y + _yOffsetMin;
 		}
 		
+		/**
+		 * 
+		 * @inheritDoc 
+		 * 
+		 */		
 		override public function get xOffset():int
 		{
 			return _xOffsetMin;
 		}
 		
+		/**
+		 * 
+		 * @inheritDoc 
+		 * 
+		 */		
 		override public function get yOffset():int
 		{
 			return _yOffsetMin; 
 		}
 		
 		//engine specific function used by the Stage2D to render the image.
-		override public function get frame():BitmapData 
+		/**
+		 * 
+		 * @inheritDoc 
+		 * 
+		 */		
+		override public function get incrementFrame():BitmapData 
 		{	
 			if(_dataLoaded)
 			{
@@ -322,8 +402,12 @@ package org.rixel.Core.displayObjects.bitmap
 				return _placeHolderData;
 			}
 		}
-		
-		override public function get collisionFrame():BitmapData
+		/**
+		 * 
+		 * @inheritDoc 
+		 * 
+		 */		
+		override public function get staticFrame():BitmapData
 		{
 			if(_dataLoaded)
 			{
@@ -333,6 +417,10 @@ package org.rixel.Core.displayObjects.bitmap
 			}
 		}
 		/////////////////////statics///////////////////
+		/**
+		 * @private 
+		 * 
+		 */		
 		public static function init():void
 		{
 			_displayObjectList = {};

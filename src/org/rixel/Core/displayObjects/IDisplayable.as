@@ -13,9 +13,9 @@ package org.rixel.Core.displayObjects
 		function get xOffset():int;
 		function get yOffset():int;
 		function get width():int;
-		function set width(value:int):void;
+		//function set width(value:int):void;
 		function get height():int;
-		function set height(value:int):void;
-		function get collisionFrame():BitmapData;
+		//function set height(value:int):void;
+		function get staticFrame():BitmapData;
 	}
 }

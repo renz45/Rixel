@@ -3,6 +3,8 @@ package org.rixel.Core.quadtree
 	/*
 	Based on the quadtree used in the open source Motor physics engine by Michael Baczynski:
 	http://code.google.com/p/polygonal/downloads/list?can=4&q=&colspec=Filename+Summary+Uploaded+Size+DownloadCount
+	
+	Modified by Adam Rensel
 	*/
 	
 	import flash.system.System;

@@ -5,7 +5,11 @@ package org.rixel.Core.main
 	import org.rixel.Core.mouse.IMouseTriggerable;
 	import org.rixel.Core.quadtree.IRxProxy;
 	import org.rixel.Core.mouse.RxComponent_Mouse;
-
+	/**
+	 * This class holds all the internal getters and setters for components within displayObjects 
+	 * @author adamrensel
+	 * 
+	 */
 	public class Abstract_internalDisplayObject
 	{
 		protected var _component_collision:RxComponent_Collision;
@@ -24,11 +28,19 @@ package org.rixel.Core.main
 			setupComponents();
 		}
 		
+		/**
+		 * sets the renderer specific to each display object. This methid must be overridden. 
+		 * 
+		 */		
 		protected function setupDisplayable():void
 		{
 			throw new Error("The setupDisplayable() method must be overridden where _component_displayable is defined, must be an instance of IDisplayable.");
 		}
 		
+		/**
+		 * sets up the components common to all displayObjects 
+		 * 
+		 */		
 		private function setupComponents():void
 		{
 			_component_quadtreeProxy = new RxComponent_QuadtreeProxyObject(this);
@@ -40,27 +52,50 @@ package org.rixel.Core.main
 		///////////PUBLIC FUNCTIONS////////////
 		
 		////////////GETTERS SETTERS////////////
-		
+		/**
+		 * returns the collision component for this display object where the user can perform different collision related functionality 
+		 * @return 
+		 * 
+		 */		
 		public function get collision():RxComponent_Collision 
 		{
 			return _component_collision;
 		}
 		///////////////INTERNAL///////////////
+		/**
+		 * @private 
+		 * @return 
+		 * 
+		 */		
 		internal function get componentMouse():IMouseTriggerable
 		{
 			return _component_mouse;
 		}
 		
+		/**
+		 * @private 
+		 * @return 
+		 * 
+		 */		
 		internal function get componentProxy():IRxProxy
 		{
 			return _component_quadtreeProxy;
 		}
 		
+		/**
+		 * @private 
+		 * @return 
+		 * 
+		 */		
 		internal function get componentDisplayable():IDisplayable
 		{
 			return _component_displayable;
 		}
 		
+		/**
+		 *@private 
+		 * 
+		 */		
 		internal function update():void
 		{
 			_component_collision.update();

@@ -1,7 +1,11 @@
 package org.rixel.Core.mouse
 {
 	import org.osflash.signals.Signal;
-
+	/**
+	 * Used for when the mouse calls events on objects 
+	 * @author adamrensel
+	 * 
+	 */
 	public class RxComponent_Mouse implements IMouseTriggerable
 	{
 		public var Event_MouseOver:Signal;
@@ -13,9 +17,6 @@ package org.rixel.Core.mouse
 		{
 			
 		}
-		
-
-		
 		
 		///////////////CALLBACKS///////////////
 		///////////PUBLIC FUNCTIONS////////////

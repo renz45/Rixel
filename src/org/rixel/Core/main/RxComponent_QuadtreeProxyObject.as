@@ -5,6 +5,11 @@ package org.rixel.Core.main
 	import org.rixel.Core.quadtree.RxQuadTreeNode;
 	import org.rixel.Core.quadtree.RxQuadTreeProxy;
 
+	/**
+	 * This component holds the information needed to interact with the quadtree at the center a rixel. 
+	 * @author adamrensel
+	 * 
+	 */	
 	public class RxComponent_QuadtreeProxyObject implements IRxProxy
 	{
 		private var _x:int;
@@ -21,7 +26,7 @@ package org.rixel.Core.main
 			_displayable = displayObject.componentDisplayable;
 			_displayObject = displayObject;
 		}
-		
+	
 		public function set x(value:int):void
 		{
 			_x = value;

@@ -2,7 +2,12 @@ package org.rixel.Core.Geometry
 {
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
-
+	/**
+	 * custom rectangle class. This class is used over the flash rectangle class because it's smaller and more efficiant, and runs faster.
+	 *  
+	 * @author adamrensel
+	 * 
+	 */
 	public class RxRectangle
 	{
 		private var _width:int;
@@ -43,7 +48,14 @@ package org.rixel.Core.Geometry
 		
 		private var x1:int;
 		private var y1:int;
-		
+		/**
+		 * create a new RxRectangle 
+		 * @param x int x coodinate
+		 * @param y int y coodinate
+		 * @param width int width value
+		 * @param height int height value
+		 * 
+		 */		
 		public function RxRectangle(x:int = 0,y:int = 0,width:int = 0,height:int = 0)
 		{
 			_width = width;
@@ -54,6 +66,10 @@ package org.rixel.Core.Geometry
 			init();
 		}
 		
+		/**
+		 * initialize points 
+		 * 
+		 */		
 		private function init():void
 		{
 			_topLeft = new RxPoint();
@@ -67,6 +83,12 @@ package org.rixel.Core.Geometry
 		
 		
 		////////////////////PUBLIC METHODS/////////////////
+		/**
+		 * checks to see if another RxRectangle intersects this one. A boolean is returned true if there is an intersection 
+		 * @param rxRectangle
+		 * @return Boolean
+		 * 
+		 */		
 		public function intersects(rxRectangle:RxRectangle):Boolean
 		{	
 			_x2 = rxRectangle.x;
@@ -77,6 +99,14 @@ package org.rixel.Core.Geometry
 			return	!(_x > _x2 + _width2 || _y > _y2 + _height2 || _x + _width < _x2 || _y + _height < _y2);
 		}
 		
+		/**
+		 * Merges this RxRectangle with another RxRectangle and returns this rectangle with the modified properties. I didn't to return a new rectangle
+		 * because I'm using this for a dirty rectangles system which is in the render loop. The new operator is too slow to use in this situation. 
+		 * 
+		 * @param rxRectangle RxRectangle
+		 * @return RxRectangle
+		 * 
+		 */		
 		public function merge(rxRectangle:RxRectangle):RxRectangle
 		{
 			
@@ -129,11 +159,23 @@ package org.rixel.Core.Geometry
 			return this;
 		}
 		
+		/**
+		 * tests if the given RxPoint is contained within this RxRectangle 
+		 * @param point RxPoint
+		 * @return Boolean
+		 * 
+		 */		
 		public function containsPoint(point:RxPoint):Boolean
 		{
 			return !(point.x < _x || point.x > _x + _width || point.y < _y || point.y > _y + _height)
 		}
 		
+		/**
+		 * Checks to see if the given RxRectangle is fully contained within this RxRectangle 
+		 * @param rxRectangle RxRectangle
+		 * @return Boolean
+		 * 
+		 */		
 		public function containsRect(rxRectangle:RxRectangle):Boolean
 		{
 			width1 = _width;
@@ -188,46 +230,89 @@ package org.rixel.Core.Geometry
 		}
 
 		////////////////////GETTERS SETTERS////////////////
+		/**
+		 * returns width of this RxRectangle 
+		 * @return int
+		 * 
+		 */		
 		public function get width():int
 		{
 			return _width;
 		}
 		
+		/**
+		 * sets the width of this RxRectangle 
+		 * @param value int
+		 * 
+		 */		
 		public function set width(value:int):void
 		{
 			_width = value;
 		}
 		
+		/**
+		 * returns the height if this RxRectangle 
+		 * @return int
+		 * 
+		 */		
 		public function get height():int
 		{
 			return _height;
 		}
 		
+		/**
+		 * sets the height of this RxRectangle 
+		 * @param value int
+		 * 
+		 */		
 		public function set height(value:int):void
 		{
 			_height = value;
 		}
 		
+		/**
+		 * returns x coordinate of this RxRectangle 
+		 * @return int
+		 * 
+		 */		
 		public function get x():int
 		{
 			return _x;
 		}
-		
+		/**
+		 * sets the x value of this RxRectangle  
+		 * @param value int
+		 * 
+		 */		
 		public function set x(value:int):void
 		{
 			_x = value;
 		}
 		
+		/**
+		 * returns the y value of this RxRectangle  
+		 * @return int
+		 * 
+		 */		
 		public function get y():int
 		{
 			return _y;
 		}
 		
+		/**
+		 * sets the y value of this RxRectangle  
+		 * @param value int
+		 * 
+		 */		
 		public function set y(value:int):void
 		{
 			_y = value;
 		}
-
+		/**
+		 * returns the topLeft RxPoint of this RxRectangle  
+		 * @return RxPoint
+		 * 
+		 */
 		public function get topLeft():RxPoint
 		{
 			_topLeft.x = _x;
@@ -236,6 +321,11 @@ package org.rixel.Core.Geometry
 			return _topLeft;
 		}
 
+		/**
+		 * returns the topRight RxPoint of this RxRectangle  
+		 * @return RxPoint
+		 * 
+		 */		
 		public function get topRight():RxPoint
 		{
 			_topRight.x = _x + _width;
@@ -243,7 +333,12 @@ package org.rixel.Core.Geometry
 			
 			return _topRight;
 		}
-
+		
+		/**
+		 * returns the bottomLeft RxPoint of this RxRectangle 
+		 * @return RxPoint
+		 * 
+		 */
 		public function get bottomLeft():RxPoint
 		{
 			_bottomLeft.x = _x;
@@ -252,6 +347,11 @@ package org.rixel.Core.Geometry
 			return _bottomLeft;
 		}
 
+		/**
+		 * returns the bottomRight RxPoint of this RxRectangle  
+		 * @return RxPoint
+		 * 
+		 */		
 		public function get bottomRight():RxPoint
 		{
 			_bottomRight.x = _x + _width;
@@ -260,7 +360,12 @@ package org.rixel.Core.Geometry
 			return _bottomRight;
 		}
 
-		public function get middle():RxPoint
+		/**
+		 * returns the center RxPoint of this RxRectangle  
+		 * @return RxPoint
+		 * 
+		 */		
+		public function get center():RxPoint
 		{	
 			_middle.x = (_x + _width) / 2;
 			_middle.y = (_y + _height) / 2;
@@ -268,7 +373,12 @@ package org.rixel.Core.Geometry
 			return _middle;
 		}
 
-		public function set middle(value:RxPoint):void
+		/**
+		 * sets the center RxPoint of this RxRectangle  
+		 * @param value RxPoint
+		 * 
+		 */		
+		public function set center(value:RxPoint):void
 		{	
 			_middle = value;
 			
@@ -276,26 +386,44 @@ package org.rixel.Core.Geometry
 			_y = _middle.y - (_height / 2);
 		}
 		
+		/**
+		 * returns the minimum x value of this RxRectangle 
+		 * @return int
+		 * 
+		 */		
 		public function get xmin():int
 		{
 			return _x;
 		}
 		
+		/**
+		 * returns the maximum x value of this RxRectangle  
+		 * @return int
+		 * 
+		 */		
 		public function get xmax():int
 		{
 			return _x + _width;
 		}
 		
+		/**
+		 * returns the minimum y value of this RxRectangle  
+		 * @return int
+		 * 
+		 */		
 		public function get ymin():int
 		{
 			return _y;
 		}
 		
+		/**
+		 * returns the maximum y value of this RxRectangle  
+		 * @return int
+		 * 
+		 */		
 		public function get ymax():int
 		{
 			return _y + _height;
 		}
-
-
 	}
 }

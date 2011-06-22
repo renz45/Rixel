@@ -1,5 +1,6 @@
 //TODO create a RxVector class or some sort of graphics API use so the bitmaps can be scaled and rotated
 //TODO bitmap Graphics API for drawing boxes, lines circles
+//FIXME work out how to store x y width height in this main class and have the Idisplayable and quadtreeProxy reference it without needing their own variables.
 package org.rixel.Core.displayObjects
 {
 	import flash.display.BitmapData;
@@ -33,7 +34,8 @@ package org.rixel.Core.displayObjects
 		
 		public function set height(value:int):void
 		{
-			_component_displayable.height = value;	
+			//_component_displayable.height = value;	
+			_height = value;
 		}
 		
 		public function get width():int
@@ -43,7 +45,8 @@ package org.rixel.Core.displayObjects
 		
 		public function set width(value:int):void
 		{
-			_component_displayable.width = value
+			//_component_displayable.width = value
+			_width = value;
 		}
 		
 		public function get x():int
@@ -70,7 +73,7 @@ package org.rixel.Core.displayObjects
 		
 		public function get frameData():BitmapData
 		{
-			return _component_displayable.collisionFrame;
+			return _component_displayable.staticFrame;
 		}
 
 
