@@ -80,7 +80,7 @@ package org.rixel.Core.main
 		 * var sp:RxSprite = new RxSprite(MySprite);
 		 * 
 		 * sp.Event_MouseUp.add(onMouseUp);
-		 * 
+		 *  
 		 * private function onMouseUp(sprite:RxSprite,mouseX,mouseY)
 		 * {
 		 * 	//Do Stuff

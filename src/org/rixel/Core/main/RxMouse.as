@@ -35,6 +35,9 @@ package org.rixel.Core.main
 		
 		private var _stage:RxStage;
 		
+		private var _hasCollideded:Boolean;
+		private var _collideTarget:Abstract_RxDisplayObject;
+		
 		private const MOUSE_DOWN:String = "mouseDown";
 		private const MOUSE_UP:String = "mouseUp";
 		private const MOUSE_CLICK:String = "mouseClick";
@@ -54,6 +57,8 @@ package org.rixel.Core.main
 		
 		private function init():void
 		{
+			_hasCollideded = false;
+			
 			_width = 8;
 			_height = 8;
 			
@@ -112,10 +117,13 @@ package org.rixel.Core.main
 		
 		private function onCollide(rxMouse:Abstract_internalDisplayObject, item:Abstract_RxDisplayObject):void
 		{
-			if(item.componentMouse is IMouseTriggerable)
+			if(item.componentMouse is IMouseTriggerable && !_hasCollideded)
 			{
 				_mouseItem = (item.componentMouse as IMouseTriggerable);
 				_mouseItem.RxMouseOver(_x,_y);
+				
+				_collideTarget = item;
+				_hasCollideded = true;
 			}
 		}
 		
@@ -246,7 +254,17 @@ package org.rixel.Core.main
 			
 			
 			_quadTree.moveProxy(_component_quadtreeProxy.proxyId);
-			_rolloverCollision.update();
+			
+			if(_hasCollideded)
+			{
+				if(!_rolloverCollision.hitTest(_x,_y,_collideTarget,_collideTarget.x,_collideTarget.y))
+				{
+					_hasCollideded = false;
+					_collideTarget.componentMouse.RxMouseOut(_x,_y);
+				}
+			}else{
+				_rolloverCollision.update();
+			}
 		}
 		
 	}
