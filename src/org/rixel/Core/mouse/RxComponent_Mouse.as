@@ -1,6 +1,10 @@
+//TODO connect mouse event methods to actual signals and make the accessable to the user.
 package org.rixel.Core.mouse
 {
 	import org.osflash.signals.Signal;
+	import org.rixel.Core.displayObjects.Abstract_RxDisplayObject;
+	import org.rixel.Core.main.Abstract_internalDisplayObject;
+
 	/**
 	 * Used for when the mouse calls events on objects 
 	 * @author adamrensel
@@ -8,37 +12,61 @@ package org.rixel.Core.mouse
 	 */
 	public class RxComponent_Mouse implements IMouseTriggerable
 	{
-		public var Event_MouseOver:Signal;
-		public var Event_MouseOut:Signal;
-		public var Event_MouseClick:Signal;
-		public var Event_MouseDown:Signal;
+		private var _displayObject:Abstract_internalDisplayObject;
 		
-		public function RxComponent_Mouse()
+		/**
+		 * signal for event dispatching, callback function needs to have arguments: Abstract_internalDisplayObject,int,int
+		 */		
+		public var Event_MouseOver:Signal;
+		/**
+		 * signal for event dispatching, callback function needs to have arguments: Abstract_internalDisplayObject,int,int
+		 */	
+		public var Event_MouseOut:Signal;
+		/**
+		 * signal for event dispatching, callback function needs to have arguments: Abstract_internalDisplayObject,int,int
+		 */	
+		public var Event_MouseClick:Signal;
+		/**
+		 * signal for event dispatching, callback function needs to have arguments: Abstract_internalDisplayObject,int,int
+		 */	
+		public var Event_MouseDown:Signal;
+		/**
+		 * signal for event dispatching, callback function needs to have arguments: Abstract_internalDisplayObject,int,int
+		 */	
+		public var Event_MouseUp:Signal;
+		
+		public function RxComponent_Mouse(displayObject:Abstract_internalDisplayObject)
 		{
+			_displayObject = displayObject;
 			
+			Event_MouseOver = new Signal(Abstract_internalDisplayObject,int,int);
+			Event_MouseOut = new Signal(Abstract_internalDisplayObject,int,int);
+			Event_MouseClick = new Signal(Abstract_internalDisplayObject,int,int);
+			Event_MouseDown = new Signal(Abstract_internalDisplayObject,int,int);
+			Event_MouseUp = new Signal(Abstract_internalDisplayObject,int,int);
 		}
 		
 		///////////////CALLBACKS///////////////
 		///////////PUBLIC FUNCTIONS////////////
-		public function RxMouseOver():void
+		public function RxMouseOver(mouseX:int,mouseY:int):void
 		{
-			//trace("HIT!");
+			Event_MouseOver.dispatch(_displayObject,mouseX,mouseY);
 		}
-		public function RxMouseOut():void
+		public function RxMouseOut(mouseX:int,mouseY:int):void
 		{
-			//trace("MOUSE OUT!");
+			Event_MouseOut.dispatch(_displayObject,mouseX,mouseY);
 		}
-		public function RxMouseClick():void
+		public function RxMouseClick(mouseX:int,mouseY:int):void
 		{
-			//trace("CLICK!");
+			Event_MouseClick.dispatch(_displayObject,mouseX,mouseY);
 		}
-		public function RxMouseDown():void
+		public function RxMouseDown(mouseX:int,mouseY:int):void
 		{
-			//trace("DOWN!");
+			Event_MouseDown.dispatch(_displayObject,mouseX,mouseY);
 		}
-		public function RxMouseUp():void
+		public function RxMouseUp(mouseX:int,mouseY:int):void
 		{
-			//trace("UP!");
+			Event_MouseUp.dispatch(_displayObject,mouseX,mouseY);
 		}
 		////////////GETTERS SETTERS////////////
 	}

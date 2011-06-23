@@ -3,8 +3,9 @@ package org.rixel.Core.main
 	import org.osflash.signals.Signal;
 	import org.rixel.Core.displayObjects.IDisplayable;
 	import org.rixel.Core.mouse.IMouseTriggerable;
-	import org.rixel.Core.quadtree.IRxProxy;
 	import org.rixel.Core.mouse.RxComponent_Mouse;
+	import org.rixel.Core.quadtree.IRxProxy;
+
 	/**
 	 * This class holds all the internal getters and setters for components within displayObjects 
 	 * @author adamrensel
@@ -17,6 +18,77 @@ package org.rixel.Core.main
 		protected var _component_quadtreeProxy:IRxProxy;
 		protected var _component_mouse:RxComponent_Mouse;
 		
+		/**
+		 * signal for event MouseOver dispatching, callback function needs to have arguments: displayObject:Abstract_internalDisplayObject,mouseX:int,mouseY:int
+		 * <p>
+		 * var sp:RxSprite = new RxSprite(MySprite);
+		 * 
+		 * sp.Event_MouseOver.add(onMouseOver);
+		 * 
+		 * private function onMouseOver(sprite:RxSprite,mouseX,mouseY)
+		 * {
+		 * 	//Do Stuff
+		 * }
+		 * </p>
+		 */		
+		public var Event_MouseOver:Signal;
+		/**
+		 * signal for event Event_MouseOut dispatching, callback function needs to have arguments: displayObject:Abstract_internalDisplayObject,mouseX:int,mouseY:int
+		 * <p>
+		 * var sp:RxSprite = new RxSprite(MySprite);
+		 * 
+		 * sp.Event_MouseOut.add(onMouseOut);
+		 * 
+		 * private function onMouseOut(sprite:RxSprite,mouseX,mouseY)
+		 * {
+		 * 	//Do Stuff
+		 * }
+		 * </p>
+		 */		
+		public var Event_MouseOut:Signal;
+		/**
+		 * signal for event Event_MouseClick dispatching, callback function needs to have arguments: displayObject:Abstract_internalDisplayObject,mouseX:int,mouseY:int
+		 * <p>
+		 * var sp:RxSprite = new RxSprite(MySprite);
+		 * 
+		 * sp.Event_MouseClick.add(onMouseClick);
+		 * 
+		 * private function onMouseClick(sprite:RxSprite,mouseX,mouseY)
+		 * {
+		 * 	//Do Stuff
+		 * }
+		 * </p>
+		 */	
+		public var Event_MouseClick:Signal;
+		/**
+		 * signal for event Event_MouseDown dispatching, callback function needs to have arguments: displayObject:Abstract_internalDisplayObject,mouseX:int,mouseY:int
+		 * <p>
+		 * var sp:RxSprite = new RxSprite(MySprite);
+		 * 
+		 * sp.Event_MouseDown.add(onMouseDown);
+		 * 
+		 * private function onMouseDown(sprite:RxSprite,mouseX,mouseY)
+		 * {
+		 * 	//Do Stuff
+		 * }
+		 * </p>
+		 */	
+		public var Event_MouseDown:Signal;
+		/**
+		 * signal for event Event_MouseUp dispatching, callback function needs to have arguments: displayObject:Abstract_internalDisplayObject,mouseX:int,mouseY:int
+		 * <p>
+		 * var sp:RxSprite = new RxSprite(MySprite);
+		 * 
+		 * sp.Event_MouseUp.add(onMouseUp);
+		 * 
+		 * private function onMouseUp(sprite:RxSprite,mouseX,mouseY)
+		 * {
+		 * 	//Do Stuff
+		 * }
+		 * </p>
+		 */	
+		public var Event_MouseUp:Signal;
+		
 		public function Abstract_internalDisplayObject()
 		{
 			init();
@@ -26,6 +98,7 @@ package org.rixel.Core.main
 		{
 			setupDisplayable();
 			setupComponents();
+			setupEvents();
 		}
 		
 		/**
@@ -45,7 +118,16 @@ package org.rixel.Core.main
 		{
 			_component_quadtreeProxy = new RxComponent_QuadtreeProxyObject(this);
 			_component_collision = new RxComponent_Collision(_component_displayable,_component_quadtreeProxy); 
-			_component_mouse = new RxComponent_Mouse();
+			_component_mouse = new RxComponent_Mouse(this);
+		}
+		
+		private function setupEvents():void
+		{
+			Event_MouseOver = _component_mouse.Event_MouseOver;
+			Event_MouseOut = _component_mouse.Event_MouseOut;
+			Event_MouseClick = _component_mouse.Event_MouseClick;
+			Event_MouseDown = _component_mouse.Event_MouseDown;
+			Event_MouseUp = _component_mouse.Event_MouseUp;
 		}
 		
 		///////////////CALLBACKS///////////////

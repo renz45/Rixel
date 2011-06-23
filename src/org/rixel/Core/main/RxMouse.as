@@ -3,7 +3,6 @@
 package org.rixel.Core.main
 {
 	import flash.display.BitmapData;
-	import flash.display.Sprite;
 	import flash.events.MouseEvent;
 	
 	import org.rixel.Core.collision.CollisionType;
@@ -116,7 +115,7 @@ package org.rixel.Core.main
 			if(item.componentMouse is IMouseTriggerable)
 			{
 				_mouseItem = (item.componentMouse as IMouseTriggerable);
-				_mouseItem.RxMouseOver();
+				_mouseItem.RxMouseOver(_x,_y);
 			}
 		}
 		
@@ -128,13 +127,13 @@ package org.rixel.Core.main
 				switch(_mouseAction)
 				{
 					case MOUSE_CLICK:
-						_mouseItem.RxMouseClick();
+						_mouseItem.RxMouseClick(_x,_y);
 						break;
 					case MOUSE_DOWN:
-						_mouseItem.RxMouseDown();
+						_mouseItem.RxMouseDown(_x,_y);
 						break;
 					case MOUSE_UP:
-						_mouseItem.RxMouseUp();
+						_mouseItem.RxMouseUp(_x,_y);
 						break;
 				}
 				
