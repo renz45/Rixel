@@ -1,6 +1,5 @@
 package org.rixel.Core.displayObjects
 {
-	import org.rixel.Core.displayObjects.bitmap.RxComponent_BitmapAnimation;
 	import org.rixel.Core.displayObjects.bitmap.RxComponent_BitmapSprite;
 	/**
 	 * Creates a RxSprite

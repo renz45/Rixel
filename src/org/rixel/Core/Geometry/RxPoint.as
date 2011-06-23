@@ -1,6 +1,6 @@
 package org.rixel.Core.Geometry
 {
-	import flash.geom.Point;
+	
 	/**
 	 * custom point class that is lighter and more efficiant than the flash Point class.  
 	 * @author adamrensel

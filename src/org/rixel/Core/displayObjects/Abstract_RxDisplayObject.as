@@ -6,11 +6,6 @@ package org.rixel.Core.displayObjects
 	import flash.display.BitmapData;
 	
 	import org.rixel.Core.main.Abstract_internalDisplayObject;
-	import org.rixel.Core.main.RxComponent_Collision;
-	import org.rixel.Core.main.RxComponent_QuadtreeProxyObject;
-	import org.rixel.Core.mouse.IMouseTriggerable;
-	import org.rixel.Core.mouse.RxComponent_Mouse;
-	import org.rixel.Core.quadtree.IRxProxy;
 
 	public class Abstract_RxDisplayObject extends Abstract_internalDisplayObject
 	{
@@ -18,6 +13,7 @@ package org.rixel.Core.displayObjects
 		protected var _y:int;
 		protected var _width:int;
 		protected var _height:int;
+		protected var _index:int;
 		
 		public function Abstract_RxDisplayObject()
 		{
@@ -74,6 +70,16 @@ package org.rixel.Core.displayObjects
 		public function get frameData():BitmapData
 		{
 			return _component_displayable.staticFrame;
+		}
+		
+		public function get index():int
+		{
+			return _index;
+		}
+
+		public function set index(value:int):void
+		{
+			_index = value;
 		}
 
 

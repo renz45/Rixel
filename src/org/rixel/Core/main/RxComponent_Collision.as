@@ -4,7 +4,6 @@ package org.rixel.Core.main
 	import flash.display.BitmapData;
 	import flash.geom.Point;
 	
-	import org.rixel.Core.Geometry.RxPoint;
 	import org.rixel.Core.Geometry.RxRectangle;
 	import org.rixel.Core.collision.CollisionSignal;
 	import org.rixel.Core.collision.CollisionType;
@@ -57,7 +56,9 @@ package org.rixel.Core.main
 		 * This signal is used to dispatch a signal when this object collides with another object on the RxStage. The resulting callback expects 2
 		 * Abstract_internalDisplayObject's - all displayObjects are of this type.
 		 * <p>
-		 * Event_collision.add(onCollide_Handler)
+		 * var sp:RxSprite = new RxSprite(MySprite);
+		 * 
+		 * sp.collision.Event_collision.add(onCollide_Handler)
 		 * 
 		 * private function onCollide_Handler(target:Abstract_internalDisplayObject,collidedWith:Abstract_internalDisplayObject)
 		 * {

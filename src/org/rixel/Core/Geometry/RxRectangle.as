@@ -1,7 +1,6 @@
 package org.rixel.Core.Geometry
 {
-	import flash.geom.Point;
-	import flash.geom.Rectangle;
+	
 	/**
 	 * custom rectangle class. This class is used over the flash rectangle class because it's smaller and more efficiant, and runs faster.
 	 *  

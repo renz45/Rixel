@@ -10,9 +10,6 @@ package org.rixel.Core.quadtree
 	import flash.system.System;
 	
 	import org.rixel.Core.Geometry.RxRectangle;
-	import org.rixel.Core.quadtree.RxQuadTreeNode;
-	import org.rixel.Core.quadtree.RxQuadTreeProxy;
-	import org.rixel.Core.quadtree.RxQuadTreeProxyBase;
 	
 	public class RxQuadTree
 	{

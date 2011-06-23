@@ -1,7 +1,5 @@
 package org.rixel.Core.collision
 {
-	import mx.states.OverrideBase;
-	
 	import org.osflash.signals.ISignalBinding;
 	import org.osflash.signals.Signal;
 	

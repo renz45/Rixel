@@ -1,7 +1,6 @@
 package org.rixel.Core.displayObjects.bitmap
 {
 	import flash.display.BitmapData;
-	import flash.display.Sprite;
 	
 	import org.osflash.signals.Signal;
 	import org.rixel.Core.displayObjects.IDisplayable;

@@ -4,7 +4,6 @@ package org.rixel.Core.displayObjects.bitmap
 {
 	import flash.display.BitmapData;
 	import flash.display.MovieClip;
-	import flash.display.Sprite;
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
 	
