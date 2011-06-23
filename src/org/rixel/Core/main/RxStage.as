@@ -5,17 +5,20 @@ package org.rixel.Core.main
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
+	import flash.events.TimerEvent;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import flash.utils.Timer;
+	
+	import flashx.textLayout.events.UpdateCompleteEvent;
 	
 	import org.rixel.Core.Geometry.RxRectangle;
 	import org.rixel.Core.displayObjects.Abstract_RxDisplayObject;
 	import org.rixel.Core.displayObjects.bitmap.Abstract_RxBitmap_DisplayObject;
-	import org.rixel.Core.displayObjects.bitmap.RxComponent_BitmapAnimation;
 	import org.rixel.Core.displayObjects.bitmap.RxComponent_BitmapSprite;
 	import org.rixel.Core.quadtree.RxQuadTree;
-	import org.rixel.Core.quadtree.RxQuadTreeNode;
+
 	/**
 	 * Main class that handles all rendering and mouse events. This class also create the quadTree which is at the center of rendering, collision detection, and mouse functionality
 	 * Eventually there will be other rendering options to choose from 
@@ -98,6 +101,7 @@ package org.rixel.Core.main
 		
 		private function init():void
 		{	
+			
 			//create a new quadtree
 			_tree = new RxQuadTree(5,RxQuadTree.MAX_1024_OBJECTS);
 		 	_tree.setWorldBounds(new RxRectangle(-_padding,-_padding,_width + (_padding*2),_height + (_padding*2)) );
@@ -120,6 +124,16 @@ package org.rixel.Core.main
 			}
 		}
 		
+		public function doLogic():void
+		{	
+			for each(var s2D:Abstract_RxDisplayObject in _displayList)
+			{
+				_tree.moveProxy(s2D.componentProxy.proxyId);
+				
+				s2D.update();
+			}
+		}
+		
 		/////////////////////CALLBACKS////////////////////
 		
 		
@@ -129,7 +143,7 @@ package org.rixel.Core.main
 		 * 
 		 */		
 		public function render():void
-		{
+		{	
 			switch(_renderMode)
 			{
 				case RxStage.BLIT_RENDERER:
@@ -139,9 +153,8 @@ package org.rixel.Core.main
 					graphicRenderer();
 					break;
 			}
-			
+			//update the mouse
 			_mouse.update();
-			
 		}
 		
 		//this is the render loop for the blit render engine, it looks a bit cluttered instead of abstracting parts out and splitting it up
@@ -169,7 +182,6 @@ package org.rixel.Core.main
 			for each(var s2D:Abstract_RxDisplayObject in _displayList)
 			{
 				_tree.moveProxy(s2D.componentProxy.proxyId);
-				s2D.update();
 				
 				sX = s2D.componentDisplayable.boundsX;
 				sY = s2D.componentDisplayable.boundsY;
@@ -251,19 +263,67 @@ package org.rixel.Core.main
 		public function AddRixelChild(child:Abstract_RxDisplayObject):Abstract_RxDisplayObject
 		{
 			child.componentProxy.proxyId = _tree.createProxy(child.componentProxy);
-			_displayList.push(child);
+			child.index = _displayList.push(child);
 			
 			return child;
 		}
 		
-		//TODO addChildAt method
-		/*public function rxAddChildAt(child:RxSprite, index:int):RxSprite
+		/**
+		 * Adds a child to RxStage at the index given 
+		 * @param child Abstract_RxDisplayObject
+		 * @param index int
+		 * @return 
+		 * 
+		 */		
+		public function AddRixelChildAt(child:Abstract_RxDisplayObject, index:int):Abstract_RxDisplayObject
 		{
+			child.componentProxy.proxyId = _tree.createProxy(child.componentProxy);
+			child.index = index;
+			_displayList.splice(index-1,0,child);
 			return child;
-		}*/
+		}
+		
+		/**
+		 * removes a child from the RxStage 
+		 * @param child Abstract_RxDisplayObject
+		 * @return Abstract_RxDisplayObject
+		 * 
+		 */		
+		public function removeRixelChild(child:Abstract_RxDisplayObject):Abstract_RxDisplayObject
+		{
+			if(_displayList.indexOf(child) == -1)
+			{
+				throw new Error("There is no Abstract_RxDisplayObject in the displayList of this RxStage: " + this);
+			}
+			
+			_displayList.splice(child.index,1);
+			_tree.destroyProxy(child.componentProxy.proxyId);
+			return child;
+		}
+		
+		/**
+		 * removes a child from the RxStage at the given index 
+		 * @param index int
+		 * @return Abstract_RxDisplayObject 
+		 * 
+		 */		
+		public function removeRixelChildAt(index:int):Abstract_RxDisplayObject
+		{
+			var child:Abstract_RxDisplayObject = _displayList.splice(index,1)[0]
+			
+			if(!child)
+			{
+				throw new Error("There is no Abstract_RxDisplayObject at index: " + index);
+			}
+				
+			_tree.destroyProxy( child.componentProxy.proxyId );
+			
+			return child;
+		}
+		
 		
 		////////////////////GETTERS SETTERS////////////////
-
+	
 		
 		////////////////////STATICS////////////////////////
 		/**
