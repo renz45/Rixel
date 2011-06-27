@@ -1,4 +1,3 @@
-//TODO investigate if a hitlist is needed for the collision event
 package org.rixel.Core.main
 {
 	import flash.display.BitmapData;
@@ -287,11 +286,15 @@ package org.rixel.Core.main
 		{
 			if(Event_collision.numberOfListeners > 0 || Event_mouseCollision.numberOfListeners > 0)
 			{	
+				//TODO Recursive node searches for collision
+				//This proxy list only searches the proxies in the parent node.
+				//needs some code to search parent nodes all the way down to the leaf nodes
 				_testproxy = _proxyObject.node.proxyList;
 				
 				while(_testproxy != null)
 				{
 					_displayObject2 = _testproxy.proxyObject.displayable;
+					
 					if(_testproxy != _proxyObject.proxy)
 					{
 						switch(_collisionType)
