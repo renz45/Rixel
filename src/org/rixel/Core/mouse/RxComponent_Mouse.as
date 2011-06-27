@@ -1,4 +1,3 @@
-//TODO connect mouse event methods to actual signals and make the accessable to the user.
 package org.rixel.Core.mouse
 {
 	import org.osflash.signals.Signal;
