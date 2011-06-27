@@ -5,7 +5,10 @@ package org.rixel.Core.displayObjects
 {
 	import flash.display.BitmapData;
 	
+	import org.rixel.Core.Geometry.RxPoint;
+	import org.rixel.Core.Geometry.RxRectangle;
 	import org.rixel.Core.main.Abstract_internalDisplayObject;
+	import org.rixel.Core.quadtree.RxQuadTreeProxy;
 
 	public class Abstract_RxDisplayObject extends Abstract_internalDisplayObject
 	{
@@ -15,9 +18,14 @@ package org.rixel.Core.displayObjects
 		protected var _height:int;
 		protected var _index:int;
 		
+		private var _rect:RxRectangle;
+		
 		public function Abstract_RxDisplayObject()
 		{
-
+			_rect = new RxRectangle();
+			
+			_width = _component_displayable.width;
+			_height = _component_displayable.height;
 		}
 		
 		///////////////CALLBACKS///////////////
@@ -52,8 +60,9 @@ package org.rixel.Core.displayObjects
 		
 		public function set x(value:int):void
 		{
+			_x = value;
 			_component_displayable.x = value;
-			_component_quadtreeProxy.x = value;
+			_component_quadtreeProxy.x = value + _component_displayable.xOffset;
 		}
 		
 		public function get y():int
@@ -63,8 +72,9 @@ package org.rixel.Core.displayObjects
 		
 		public function set y(value:int):void
 		{
+			_y = value;
 			_component_displayable.y = value;
-			_component_quadtreeProxy.y = value;
+			_component_quadtreeProxy.y = value + _component_displayable.yOffset;
 		}
 		
 		public function get frameData():BitmapData
@@ -83,8 +93,35 @@ package org.rixel.Core.displayObjects
 		}
 
 
-		/////////////////////INTERNAL///////////////////
+		public function get testRect():RxRectangle
+		{
+			if(_component_quadtreeProxy.proxy)
+			{
+				/*_rect.x =  _component_quadtreeProxy.proxy.xl1;
+				_rect.y =  _component_quadtreeProxy.proxy.yl1;
+				_rect.width = _component_quadtreeProxy.proxy.xl2 - _component_quadtreeProxy.proxy.xl1;
+				_rect.height = _component_quadtreeProxy.proxy.yl2 - _component_quadtreeProxy.proxy.yl1;*/
+				
+			}
+			
+			_rect.x = _x;
+			_rect.y = _y;
+			_rect.width = _width;
+			_rect.height = _height;
+			
+			return _rect;
+		}
 		
+		public function get bounds():RxPoint
+		{
+			return new RxPoint(_component_displayable.boundsX, _component_displayable.boundsY);
+		}
+		
+		public function get prox():RxQuadTreeProxy
+		{
+			return _component_quadtreeProxy.proxy;
+		}
+		/////////////////////INTERNAL///////////////////
 		
 	}
 }
