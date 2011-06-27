@@ -1,5 +1,12 @@
 //TODO vector rendering
 //TODO Redraw areas
+/*
+Rixel is on hold at the moment. I just want to make a list of current issues for later.
+
+The quadtree is working as intended, but the search functionality needs to search child nodes for collision. At the moment this isn't happening.
+
+
+*/
 package org.rixel.Core.main
 {
 	import flash.display.Bitmap;
@@ -18,6 +25,7 @@ package org.rixel.Core.main
 	import org.rixel.Core.displayObjects.bitmap.Abstract_RxBitmap_DisplayObject;
 	import org.rixel.Core.displayObjects.bitmap.RxComponent_BitmapSprite;
 	import org.rixel.Core.quadtree.RxQuadTree;
+	import org.rixel.Core.quadtree.RxQuadTreeProxy;
 
 	/**
 	 * Main class that handles all rendering and mouse events. This class also create the quadTree which is at the center of rendering, collision detection, and mouse functionality
@@ -62,6 +70,10 @@ package org.rixel.Core.main
  
 		public static const GRAPHIC_RENDERER:String = "graphicRenderer";
 		public static const BLIT_RENDERER:String = "blitRenderer";
+		
+		
+		/////test
+		private var _testCanvas:Sprite = new Sprite();
 		/**
 		 * Creates a new instance of the stage. Multiple stages can be created but it's not recommended. Creating multiple stages will dramatically increase memory usage.
 		 * The public static method init on the Rixel class must called before the stage can be used
@@ -101,6 +113,7 @@ package org.rixel.Core.main
 		
 		private function init():void
 		{	
+			this.addChild(_testCanvas);
 			
 			//create a new quadtree
 			_tree = new RxQuadTree(5,RxQuadTree.MAX_1024_OBJECTS);
@@ -128,9 +141,7 @@ package org.rixel.Core.main
 		{	
 			for each(var s2D:Abstract_RxDisplayObject in _displayList)
 			{
-				_tree.moveProxy(s2D.componentProxy.proxyId);
 				
-				s2D.update();
 			}
 		}
 		
@@ -166,6 +177,9 @@ package org.rixel.Core.main
 		 */		
 		private function blitRenderer():void
 		{	
+			
+			
+			
 			_bitmapBuffer.lock();
 			
 			rect.x = 0; 
@@ -178,10 +192,26 @@ package org.rixel.Core.main
 			//clear bitmap
 			_bitmapBuffer.fillRect(rect,_bgColor);
 			
+			//TEST DEBUG CODE
+			_testCanvas.graphics.clear();
+
 			//loop through each object in the displayList vector
 			for each(var s2D:Abstract_RxDisplayObject in _displayList)
 			{
+				s2D.update();
 				_tree.moveProxy(s2D.componentProxy.proxyId);
+				
+				////////// TESTING DEBUG CODE
+				_testCanvas.graphics.lineStyle(1,0xffaaaa);
+				_testCanvas.graphics.drawRect(s2D.prox.node.xmin,s2D.prox.node.ymin,s2D.prox.node.xmax - s2D.prox.node.xmin, s2D.prox.node.ymax - s2D.prox.node.ymin);
+				
+				_testCanvas.graphics.lineStyle(1,0x333399);
+				_testCanvas.graphics.drawRect(s2D.componentProxy.xmin,s2D.componentProxy.ymin,s2D.componentProxy.xmax - s2D.componentProxy.xmin, s2D.componentProxy.ymax - s2D.componentProxy.ymin);
+				
+				_testCanvas.graphics.lineStyle(1,0x339933);
+				_testCanvas.graphics.drawRect(s2D.componentDisplayable.boundsX,s2D.componentDisplayable.boundsY,s2D.width,s2D.height);
+				
+				///////////END DEBUG TESTING CODE
 				
 				sX = s2D.componentDisplayable.boundsX;
 				sY = s2D.componentDisplayable.boundsY;
