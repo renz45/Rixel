@@ -121,7 +121,7 @@ package org.rixel.Core.main
 			{
 				_mouseItem = (item.componentMouse as IMouseTriggerable);
 				_mouseItem.RxMouseOver(_x,_y);
-				
+
 				_collideTarget = item;
 				_hasCollideded = true;
 			}
