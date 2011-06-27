@@ -18,7 +18,12 @@ package org.rixel.Core.quadtree
 		{
 			proxy.prevInNode = null;
 			proxy.nextInNode = proxyList;
-			if (proxyList) proxyList.prevInNode = proxy;
+			
+			if(proxyList)
+			{
+				proxyList.prevInNode = proxy;
+			}
+			
 			proxyList = proxy;
 			proxy.node = this;
 			
