@@ -25,6 +25,9 @@ package org.rixel.Core.main
 		{
 			_displayable = displayObject.componentDisplayable;
 			_displayObject = displayObject;
+			
+			_width = displayObject.componentDisplayable.width;
+			_height = displayObject.componentDisplayable.height;
 		}
 	
 		public function set x(value:int):void
@@ -34,7 +37,7 @@ package org.rixel.Core.main
 		
 		public function set y(value:int):void
 		{
-			_y = value;
+			_y = value;	
 		}
 		
 		public function set width(value:int):void
