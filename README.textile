@@ -10,3 +10,5 @@ h2. Goals
 * use as3-Signals for events
 * Integrate a modular system for add-ons to add other functionality (ex. isometric rendering, box2D, parallax scrolling, particle effects, etc)
 * create a matching Red5 server side application that will facilitate multiplayer games and interaction
+
+h4. This project is on hold for a little while, I've had other projects pop up that are taking up most of my time. I've added a TODO FIXME task list which should explain current direction and current issues.
